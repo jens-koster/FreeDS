@@ -1,0 +1,52 @@
+[project]
+name = "tfds"
+version = "0.1.0"
+description = "The free data stack CLI and python API"
+authors = [
+    {name = "Jens Köster",email = "tfds@jensbox.se"}
+]
+license = {text = "GNU GENERAL PUBLIC LICENSE v3"}
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "typer[all]>=0.10.0",
+    "boto3 (>=1.38.19,<2.0.0)",
+    "requests (>=2.32.3,<3.0.0)",
+    "nbformat (>=5.10.4,<6.0.0)",
+]
+
+[tool.poetry]
+packages = [
+  { include = "tfds", from = "src" }
+]
+
+[project.scripts]
+tfds = "tfds.cli:app"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+isort = "^6.0.1"
+flake8 = "^7.2.0"
+mypy = "^1.15.0"
+pytest = "^8.3.5"
+pre-commit = "^4.2.0"
+ruff = "^0.11.10"
+
+types-pyyaml = "^6.0.12.20250516"
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
