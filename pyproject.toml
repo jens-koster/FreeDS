@@ -15,17 +15,17 @@ dependencies = [
     "nbformat (>=5.10.4,<6.0.0)",
 ]
 
-[tool.poetry]
-packages = [
-  { include = "tfds", from = "src" }
-]
-
 [project.scripts]
 tfds = "tfds.cli:app"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+packages = [
+  { include = "tfds", from = "src" }
+]
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
@@ -36,17 +36,34 @@ pytest = "^8.3.5"
 pre-commit = "^4.2.0"
 ruff = "^0.11.10"
 
-types-pyyaml = "^6.0.12.20250516"
+[tool.poetry.extras]
+spark = ["pyspark"]
+
 [tool.black]
 line-length = 88
 
 [tool.isort]
 profile = "black"
 
+[tool.mypy]
+python_version = "3.10"
+strict = true
+
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disable_error_code = ["no-untyped-def"]
+
+[[tool.mypy.overrides]]
+module = "yaml"
+ignore_missing_imports = true
+
 [tool.ruff]
 line-length = 88
 target-version = "py310"
 
-[tool.mypy]
-python_version = "3.10"
-strict = true
+[tool.ruff.lint]
+ignore-init-module-imports = true
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["ANN201"]

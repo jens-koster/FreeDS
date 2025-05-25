@@ -2,6 +2,7 @@
 
 import fcntl
 import os
+from typing import Any
 
 import yaml  # type: ignore
 
@@ -29,17 +30,32 @@ def get_file_name(config_name: str) -> str:
     return os.path.join(get_root_folder(), "config", config_name + ".yaml")
 
 
-def read_config(config_name: str) -> dict[str, str] | None:
-    """Read a configuration file, returning the config data as a dict."""
+def config_exists(config_name: str) -> bool:
+    """Check if a config file exists."""
+    if config_name is None:
+        raise ValueError("Config name cannot be None")
     file_path = get_file_name(config_name)
-    if not os.path.exists(file_path):
-        return None
+    return os.path.isfile(file_path)
+
+
+def read_config(config_name: str) -> dict[str, Any]:
+    """Read a configuration file, returning the config data as a dict."""
+    if config_name is None:
+        raise ValueError("Config name cannot be None")
+    file_path = get_file_name(config_name)
+    if not os.path.isfile(file_path):
+        raise ValueError(f"Config '{config_name}' not found in config nor secrets.")
+
     with open(file_path, "r") as file:
-        config = yaml.safe_load(file) or {}
+        config: dict[str, str] = yaml.safe_load(file)
+    if not config:
+        raise ValueError(f"Config '{config_name}' in {file_path} is empty or invalid.")
+    if config.get("config") is None:
+        raise ValueError(f"Config '{config_name}' in {file_path} does not have a 'config' key.")
     return config
 
 
-def write_config(config_name: str, config_data: dict[str, str]) -> None:
+def write_config(config_name: str, config_data: dict[str, Any]) -> None:
     """Write a configuration file, meta key is stripped if present."""
     file_path = get_file_name(config_name)
     config_data.pop("meta", None)
@@ -72,4 +88,10 @@ def list_configs() -> list[str]:
     """List all available configurations (including the secrets)."""
     cfg_list = list_files(os.path.join(get_root_folder(), "config"))
     sec_list = list_files(os.path.join(get_root_folder(), "secrets"))
-    return [strip_yaml(f) for f in cfg_list + sec_list]
+    return [strip_yaml(f) for f in cfg_list + sec_list if f.endswith(".yaml") or f.endswith(".yml")]
+
+
+def get_config(config_name: str) -> dict[str, Any]:
+    """Get the a config key from a file while validating the file."""
+    cfg: dict[str, Any] = read_config(config_name=config_name)["config"]
+    return cfg
