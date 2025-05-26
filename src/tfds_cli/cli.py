@@ -1,6 +1,6 @@
 import typer
 
-from tfds.commands import cfg, dc, nb
+from tfds_cli.commands import cfg, dc, nb
 
 app = typer.Typer()
 

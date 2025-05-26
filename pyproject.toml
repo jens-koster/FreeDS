@@ -1,7 +1,7 @@
 [project]
 name = "tfds"
 version = "0.1.0"
-description = "The free data stack CLI and python API"
+description = "The free data stack CLI"
 authors = [
     {name = "Jens Köster",email = "tfds@jensbox.se"}
 ]
@@ -13,10 +13,11 @@ dependencies = [
     "boto3 (>=1.38.19,<2.0.0)",
     "requests (>=2.32.3,<3.0.0)",
     "nbformat (>=5.10.4,<6.0.0)",
+    "tfdslib @ file:///Users/jens/src/tfdslib",
 ]
 
 [project.scripts]
-tfds = "tfds.cli:app"
+tfds = "tfds_cli.cli:app"
 
 [build-system]
 requires = ["poetry-core"]
@@ -24,20 +25,17 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 packages = [
-  { include = "tfds", from = "src" }
+  { include = "tfds_cli", from = "src" }
 ]
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
 isort = "^6.0.1"
-flake8 = "^7.2.0"
 mypy = "^1.15.0"
 pytest = "^8.3.5"
 pre-commit = "^4.2.0"
 ruff = "^0.11.10"
 
-[tool.poetry.extras]
-spark = ["pyspark"]
 
 [tool.black]
 line-length = 88
