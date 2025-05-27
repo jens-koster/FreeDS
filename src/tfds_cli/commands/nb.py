@@ -1,21 +1,61 @@
 import typer
+from tfdslib.config import get_config
+from tfdslib.s3 import delete_prefix, list_files
 
-nb_app = typer.Typer()
+from tfds_cli.utils import deploy_notebooks
 
-
-@nb_app.command()  # type: ignore
-def deploy(nb: str = typer.Option(..., "--nb", help="Notebook name")) -> None:
-    """Deploy all notebooks to S3, timestamping and tagging them with git revision."""
-    typer.echo(f"Deploy notebook: {nb}")
+nb_app = typer.Typer(help="Manage notebooks on S3.")
 
 
 @nb_app.command()  # type: ignore
-def ls() -> None:
+def deploy(repo: str = typer.Option("all", "--repo", help="Deploy a single repo only.")) -> None:
+    """Deploy notbooks to S3 from repo(s), timestamping and tagging them with git revision."""
+    deploy_notebooks(repo)
+
+
+@nb_app.command()  # type: ignore
+def cfg() -> None:
+    """Show repo config."""
+    cfg = get_config("nbdeploy")
+    for repo in cfg.get("repos", []):
+        print(f"Repo: {repo['name']}")
+        print("Directories:")
+        for folder in repo.get("directories", []):
+            print(f"  - {folder}")
+
+
+@nb_app.command()  # type: ignore
+def ls(prefix: str = typer.Argument(None, help="List files under this prefix")) -> None:
     """List all notebooks on S3."""
-    typer.echo("List notebooks")
+    cfg = get_config("nbdeploy")
+    bucket = cfg.get("bucket", "notebooks")
+    if prefix:
+        print(f"Files under prefix '{prefix}' in bucket {bucket}:")
+        books = list_files(bucket_name=bucket, prefix=prefix)
+        for book in books:
+            print(f"  - {book}")
+        return
+
+    for repo in cfg.get("repos", []):
+        books = list_files(bucket_name="notebooks", prefix=repo["name"])
+        print(f"Repo {repo['name']} has {len(books)} files in bucket {bucket}:")
+        for book in books:
+            print(f"  - {book}")
 
 
 @nb_app.command()  # type: ignore
-def deletes3(nb: str = typer.Option(..., "--nb", help="Notebook name")) -> None:
-    """Delete all or a single notebook on s3."""
-    typer.echo(f"Clear notebook: {nb}")
+def delprefix(prefix: str = typer.Argument(..., help="Delete all files under this prefix")) -> None:
+    """Delete all files under an S3 prefix."""
+    cfg = get_config("nbdeploy")
+    bucket = cfg.get("bucket", "notebooks")
+    books = list_files(bucket_name="notebooks", prefix=prefix)
+    for book in books:
+        print(f"  - {book}")
+    if not typer.confirm(f"{len(books)} files under prefix {prefix} in bucket {bucket} will be deleted. Continue?"):
+        print("Deletion cancelled.")
+        return
+    delete_prefix(bucket=bucket, prefix=prefix)
+
+
+# deploy("all")
+# delprefix("pipe-dreams")
