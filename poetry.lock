@@ -1087,14 +1087,14 @@ files = [
 
 [[package]]
 name = "tfdslib"
-version = "0.1.8"
+version = "0.1.9"
 description = "tfds utilities for use in cli, plugins and notebooks"
 optional = false
 python-versions = ">=3.11"
 groups = ["main"]
 files = [
-    {file = "tfdslib-0.1.8-py3-none-any.whl", hash = "sha256:7240d7fd05657cbbeb1ff529ec9083d801835789bae8ee72744cf88121444c38"},
-    {file = "tfdslib-0.1.8.tar.gz", hash = "sha256:90bee1ad95444ca9adc0c14f3ca355adeb663e64d2dceabc10751ad0a7ca687a"},
+    {file = "tfdslib-0.1.9-py3-none-any.whl", hash = "sha256:9bc2769ebf70162a0687663716770a95e1476a70a368ffe0b16fa87fadb58aa4"},
+    {file = "tfdslib-0.1.9.tar.gz", hash = "sha256:cfbc4579eba685b3029a29451ec91bf1e722759c504df0c79c0195f164c5f83d"},
 ]
 
 [package.dependencies]
