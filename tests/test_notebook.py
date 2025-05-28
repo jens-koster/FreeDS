@@ -38,7 +38,7 @@ def test_get_repo_config_found(monkeypatch):
 def test_get_repo_config_not_found(monkeypatch):
     monkeypatch.setattr(nb_mod, "get_config", lambda x: {"repos": []})
     result = nb_mod.get_repo_config("repoX")
-    assert result is None
+    assert result == {}
 
 
 def test_format_md():

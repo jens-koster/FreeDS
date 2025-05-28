@@ -2,14 +2,32 @@ from typing import List
 
 import typer
 
+from tfds_cli.utils import execute_docker_compose, get_plugins
+
 
 def dc(
-    service: str = typer.Option("current-stack", "--service", "-s", help="Service name"),
+    single: str = typer.Option("current-stack", "--single", "-s", help="Run for a single plugin"),
     extra: List[str] = typer.Argument(..., help="Docker compose parameters"),
-) -> None:
+) -> int:
     """
-    Call docker compose for all tfds plugins in the current stack or for a single plugin.
+    Call docker compose with the supplied parameters for all tfds plugins in the current stack.
+    """
 
-    """
-    typer.echo(f"dc called with service={service}")
-    typer.echo(f"Extra params: {extra}")
+    print(f"Running docker compose for {'all plugins' if single == 'current-stack' else single} in current stack.")
+
+    if not extra:
+        print("Error: docker compose command must be given")
+        return 1
+
+    plugins = get_plugins(single)
+    if plugins is None:
+        print(f"Error: could not retrieve plugins for stack '{single}'.")
+        return 1
+    else:
+        print(f"Found plugins: {plugins}")
+
+    execute_docker_compose(params=extra, plugins=plugins)
+    return 0
+
+
+dc("current-stack", ["port"])  # Default call for testing purposes

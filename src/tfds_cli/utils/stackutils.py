@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from typing import Union
+from typing import Any, Optional, Union, cast
 
 from tfdslib.config import get_config, set_config
 
@@ -17,6 +17,11 @@ def get_stack_names() -> list[str]:
     """Get a list of stacknames"""
     stacks = get_config("stacks")
     return list(stacks.keys())
+
+
+def get_stack_config(stack_name: str) -> Optional[dict[str, Any]]:
+    cfg = get_config("stacks")
+    return cast(dict[str, Any], cfg.get(stack_name))
 
 
 def set_current_stack(stack_name: str) -> None:
