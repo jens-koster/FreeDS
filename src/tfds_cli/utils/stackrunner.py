@@ -12,6 +12,22 @@ from tfds_cli.utils.stackutils import (
 )
 
 
+def set_secret_envs() -> None:
+    """Set our secrets in environment variables; TFDS_<PLUGIN>_<KEY>."""
+    config_cfg = get_config("config")
+    os.environ["TFDS_CONFIG_URL"] = config_cfg.get("url", "http://tfds-config:8005/api/configs")
+    secrets = ["minio", "s3"]  # todo: make this a config...
+    for secret in secrets:
+        config = get_config(secret)
+        for key, value in config.items():
+            if isinstance(value, str) and value.startswith("~/"):
+                value = str(Path(value).expanduser())
+            if isinstance(value, list):
+                value = ",".join(map(str, value))
+            env_var = f"TFDS_{secret}_{key}".upper()
+            os.environ[env_var] = str(value)
+
+
 def get_plugins(single: str = "current-stack") -> Optional[List[str]]:
     current_stack = get_current_stack()
     if current_stack is None:
@@ -30,7 +46,7 @@ def get_plugins(single: str = "current-stack") -> Optional[List[str]]:
 
     if single and single != "current-stack":
         if single in plugins:
-            print(f"Running for single plugin: {single}")
+            print(f"Single plugin specified: {single}")
             plugins = [single]
         else:
             print(f"Error: plugin '{single}' not found in stack {current_stack}.")
@@ -46,13 +62,11 @@ def execute_docker_compose(params: List[str], plugins: List[str]) -> None:
         params.append("-d")
 
     dc = ["docker", "compose", *params]
-    config_cfg = get_config("config")
-    os.environ["TFDS_CONFIG_URL"] = config_cfg.get("url", "http://tfds-config:8005/api/configs")
 
     # Execute the command for each plugin
     start_dir = Path.cwd()
     print(f"Running '{' '.join(dc)}' for plugins: {plugins}")
-
+    set_secret_envs()
     for plugin in plugins:
         plugin_dir = start_dir / plugin
         if not plugin_dir.exists():
