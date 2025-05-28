@@ -135,27 +135,34 @@ def deploy_dir(notebooks_dir: str, s3_prefix: str) -> None:
     bucket = cfg.get("bucket", "notebooks")
     # Get git information
     git_info = get_git_info()
-    print(f"Stamping notebooks with Git revision: {git_info}")
+    print(f"Stamping notebooks in {notebooks_dir} with Git revision: {git_info}")
 
     stamped_notebooks = []
-    for root, _, files in os.walk(notebooks_dir):
+    for dir_path, _, files in os.walk(notebooks_dir):
         for file in files:
-            if file.endswith(".ipynb"):
-                notebook_path = os.path.join(root, file)
-                rel_path = os.path.relpath(notebook_path, notebooks_dir)
-                print(f"Processing {rel_path}...")
-                stamped_path = os.path.join(temp_dir, rel_path)
-                nb = stamp_notebook(notebook_path, stamped_path)
-                if nb:
-                    stamped_notebooks.append((stamped_path, file))
-                else:
-                    print(f"Failed to stamp notebook {notebook_path}")
+            if not file.endswith(".ipynb"):
+                continue
+            notebook_local_path = os.path.join(dir_path, file)
+            rel_path = os.path.relpath(dir_path, start=notebooks_dir)
+            if rel_path == ".":
+                full_prefix = s3_prefix
+            else:
+                rel_path = os.path.join(s3_prefix, rel_path)
+
+            print(f"Processing notebook: {full_prefix}/{file}")
+            stamped_path = os.path.join(temp_dir, full_prefix, file)
+            s3_path = os.path.join(full_prefix, file)
+            nb = stamp_notebook(notebook_local_path, stamped_path)
+            if nb:
+                stamped_notebooks.append((stamped_path, s3_path))
+            else:
+                print(f"Failed to stamp notebook {notebook_local_path}")
 
     # Upload to S3
     if stamped_notebooks:
         print(f"Found {len(stamped_notebooks)} notebooks to upload")
-        for stamped_path, file_name in stamped_notebooks:
-            put_file(local_path=stamped_path, bucket=bucket, prefix=s3_prefix, file_name=file_name)
+        for stamped_path, s3_path in stamped_notebooks:
+            put_file(local_path=stamped_path, bucket=bucket, file_name=s3_path)
             if not preserve_temp:
                 os.remove(stamped_path)  # Clean up local copy after upload
 
@@ -171,9 +178,6 @@ def deploy_repo(repo_name: str) -> None:
         return
     os.chdir(repo_dir)
     repo_cfg = get_repo_config(repo_name)
-
-    git_info = get_git_info()
-    print(f"Stamping notebooks in repo {repo_name} with git info: {git_info}")
 
     for dir in repo_cfg.get("directories", []):
         notebooks_dir = os.path.join(repo_dir, dir)
