@@ -45,7 +45,10 @@ def get_plugins(single: str = "current-stack") -> Optional[List[str]]:
         return None
 
     if single and single != "current-stack":
-        if single in plugins:
+        if single == ".":
+            print("Running for current dir, assuming it is a plugin.")
+            plugins = [single]
+        elif single in plugins:
             print(f"Single plugin specified: {single}")
             plugins = [single]
         else:

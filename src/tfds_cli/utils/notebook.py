@@ -85,12 +85,86 @@ def find_cell_by_tag(notebook: nbformat.NotebookNode, tag: str) -> nbformat.Note
     return None
 
 
+class NotebookFile:
+    def __init__(self, repo: str, repo_path: str, notebook_dir: str, dir: str, file: str) -> None:
+        self.repo = repo
+        self.notebook_dir = notebook_dir
+        self.repo_path = repo_path
+        self.dir = None if dir == "." else dir
+        self.file = file
+
+    def s3_prefix(self) -> str:
+        """
+        Return the S3 prefix for this notebook file.
+        """
+        if self.dir:
+            return f"{self.repo}/{self.dir}"
+        return f"{self.repo}/{self.notebook_dir}"
+
+    def local_prefix(self) -> str:
+        """
+        Return the directory path for this notebook file relative (and including) the repository.
+        """
+        if self.dir:
+            return os.path.join(self.repo, self.dir)
+        return os.path.join(self.repo, self.notebook_dir)
+
+    def temp_file_path(self, temp_dir: str) -> str:
+        """
+        Return the local path for this notebook file in the temporary directory.
+        """
+        return os.path.join(temp_dir, self.local_prefix(), self.file)
+
+    def local_file_path(self) -> str:
+        """
+        Return the local path for this notebook file.
+        """
+        if self.dir:
+            return os.path.join(self.repo_path, self.dir, self.file)
+        else:
+            return os.path.join(self.repo_path, self.notebook_dir, self.file)
+
+    def s3_file_path(self) -> str:
+        """
+        Return the s3 path for this notebook file.
+        """
+        return os.path.join(self.s3_prefix(), self.file)
+
+
+def list_files(repo: str, notebook_dir: str) -> list[NotebookFile]:
+    """
+    List all notebook files in the specified directory of the repository.
+    Returns a list of NotebookFile objects.
+    """
+    repo_dir = find_dir(repo)
+    if repo_dir is None:
+        print(f"Error: repository '{repo}' not found")
+        return []
+
+    notebook_path = os.path.join(repo_dir, notebook_dir)
+    if not os.path.exists(notebook_path):
+        print(f"Notebook directory '{notebook_dir}' not found in '{repo_dir}'")
+        return []
+
+    notebook_files = []
+    for dirpath, _, files in os.walk(notebook_path):
+        rel_dir = os.path.relpath(dirpath, start=repo_dir)
+        for file in files:
+            if file.endswith(".ipynb"):
+                notebook_files.append(
+                    NotebookFile(repo=repo, repo_path=str(repo_dir), notebook_dir=notebook_dir, dir=rel_dir, file=file)
+                )
+    return notebook_files
+
+
 def stamp_notebook(input_path: str, output_path: str) -> Optional[nbformat.NotebookNode]:
     """
     Add Git revision information to notebook metadata and2
     insert/update a markdown cell at the top with revision info.
     Uses cell tags to identify the Git info cell.
     """
+    if Path(input_path).resolve() == Path(output_path).resolve():
+        raise ValueError("Input and output paths must be different to avoid overwriting the original notebook.")
     try:
         git_info = get_git_info()
         # Load the notebook
@@ -117,14 +191,14 @@ def stamp_notebook(input_path: str, output_path: str) -> Optional[nbformat.Noteb
         os.makedirs(containing_dir, exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as f:
             nbformat.write(notebook, f)
-
+        print(f"Notebook {input_path} stamped with Git info and saved to {output_path}.")
         return notebook
     except Exception as e:
         print(f"Error processing notebook {input_path}: {e}")
         return None
 
 
-def deploy_dir(notebooks_dir: str, s3_prefix: str) -> None:
+def deploy_dir(repo: str, notebook_dir: str) -> None:
     """
     Process each notebook in the specified directory, stamp it with Git info,
     and upload it to S3.
@@ -133,38 +207,20 @@ def deploy_dir(notebooks_dir: str, s3_prefix: str) -> None:
     temp_dir = cfg.get("temp_dir")
     preserve_temp = cfg.get("preserve_temp", False)
     bucket = cfg.get("bucket", "notebooks")
-    # Get git information
-    git_info = get_git_info()
-    print(f"Stamping notebooks in {notebooks_dir} with Git revision: {git_info}")
+    print(f"Deploying notebooks from {repo}/{notebook_dir} to S3 bucket {bucket}")
 
-    stamped_notebooks = []
-    for dir_path, _, files in os.walk(notebooks_dir):
-        for file in files:
-            if not file.endswith(".ipynb"):
-                continue
-            notebook_local_path = os.path.join(dir_path, file)
-            rel_path = os.path.relpath(dir_path, start=notebooks_dir)
-            if rel_path == ".":
-                full_prefix = s3_prefix
-            else:
-                rel_path = os.path.join(s3_prefix, rel_path)
+    # get files to stamp
+    notebook_files = list_files(repo, notebook_dir)
 
-            print(f"Processing notebook: {full_prefix}/{file}")
-            stamped_path = os.path.join(temp_dir, full_prefix, file)
-            s3_path = os.path.join(full_prefix, file)
-            nb = stamp_notebook(notebook_local_path, stamped_path)
-            if nb:
-                stamped_notebooks.append((stamped_path, s3_path))
-            else:
-                print(f"Failed to stamp notebook {notebook_local_path}")
-
-    # Upload to S3
-    if stamped_notebooks:
-        print(f"Found {len(stamped_notebooks)} notebooks to upload")
-        for stamped_path, s3_path in stamped_notebooks:
-            put_file(local_path=stamped_path, bucket=bucket, file_name=s3_path)
-            if not preserve_temp:
-                os.remove(stamped_path)  # Clean up local copy after upload
+    for nbfile in notebook_files:
+        print(f"Stamping and uploading notebook: {nbfile.local_file_path()}.")
+        stamped_path = nbfile.temp_file_path(temp_dir)
+        if not os.path.exists(os.path.dirname(stamped_path)):
+            os.makedirs(os.path.dirname(stamped_path), exist_ok=True)
+        stamp_notebook(nbfile.local_file_path(), stamped_path)
+        put_file(local_path=stamped_path, bucket=bucket, file_name=nbfile.s3_file_path())
+        if not preserve_temp:
+            os.remove(stamped_path)  # Clean up local copy after upload
 
 
 def deploy_repo(repo_name: str) -> None:
@@ -181,29 +237,29 @@ def deploy_repo(repo_name: str) -> None:
 
     for dir in repo_cfg.get("directories", []):
         notebooks_dir = os.path.join(repo_dir, dir)
-        if os.path.exists(notebooks_dir):
-            print(f"Found notebooks: {notebooks_dir}")
-        else:
+        if not os.path.exists(notebooks_dir):
             print(f"Error: notebooks dir '{notebooks_dir}' not found in {repo_dir}")
             continue
-
-        deploy_dir(notebooks_dir=notebooks_dir, s3_prefix=os.path.join(repo_name, dir))
+        deploy_dir(repo=repo_name, notebook_dir=dir)
 
 
 def deploy_notebooks(repo: str = "all") -> None:
     """Deploy notebooks to S3 from configured repo(s), timestamping and tagging them with git revision."""
     start_dir = os.getcwd()
+
     cfg = get_config("nbdeploy")
     temp_dir = cfg.get("temp_dir")
     create_temp_dir = not os.path.exists(temp_dir)
     if create_temp_dir:
         os.makedirs(temp_dir, exist_ok=True)
+
     if repo != "all":
         deploy_repo(repo_name=repo)
     else:
         for r in cfg.get("repos", []):
             deploy_repo(repo_name=r["name"])
 
+    # cleanup
     os.chdir(start_dir)
     if create_temp_dir and not cfg.get("preserve_temp"):
         os.rmdir(temp_dir)

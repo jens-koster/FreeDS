@@ -23,6 +23,8 @@ def dc(
     if plugins is None:
         print(f"Error: could not retrieve plugins for stack '{single}'.")
         return 1
+    else:
+        print(f"Found plugins: {plugins}")
 
     execute_docker_compose(params=extra, plugins=plugins)
     return 0
