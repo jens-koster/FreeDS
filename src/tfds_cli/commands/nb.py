@@ -8,9 +8,15 @@ nb_app = typer.Typer(help="Manage notebooks on S3.")
 
 
 @nb_app.command()  # type: ignore
-def deploy(repo: str = typer.Option("all", "--repo", help="Deploy a single repo only.")) -> None:
-    """Deploy notbooks to S3 from repo(s), timestamping and tagging them with git revision."""
-    deploy_notebooks(repo)
+def deploy(
+    repo: str = typer.Option("all", "--repo", help="Deploy a single repo only."),
+    normalize: bool = typer.Option(False, "--normalize", is_flag=True, help="Normalize source file before deploying."),
+) -> None:
+    """Deploy notbooks to S3 from repo(s), timestamping and tagging them with git revision.
+    Optionally you can use this command to upgrade the notebook formats to 4.5, silencing the id warning."""
+    if normalize:
+        print("Normalizing source files before deployment...")
+    deploy_notebooks(repo=repo, normalize_source=normalize)
 
 
 @nb_app.command()  # type: ignore

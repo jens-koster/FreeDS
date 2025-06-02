@@ -186,7 +186,7 @@ def stamp_notebook(input_path: str, output_path: str) -> Optional[nbformat.Noteb
         revision_cell["metadata"]["tags"].append("gitinfo")
         revision_cell["source"] = format_md(git_info, input_path)
 
-        # write a copy of the notebook to the output path
+        print(f"Writing a copy of the notebook to: {output_path}.")
         containing_dir = os.path.dirname(output_path)
         os.makedirs(containing_dir, exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as f:
@@ -198,7 +198,27 @@ def stamp_notebook(input_path: str, output_path: str) -> Optional[nbformat.Noteb
         return None
 
 
-def deploy_dir(repo: str, notebook_dir: str) -> None:
+def normalize(files: list[NotebookFile]) -> None:
+    """
+    Normalize the source files to verrsion 4.5.
+    """
+    for file in files:
+        print(f"Normalizing notebook: {file.local_file_path()}.")
+        with open(file.local_file_path(), "r", encoding="utf-8") as f:
+            nb = nbformat.read(f, as_version=4)
+        nbformat.validator.normalize(nb, version=4, version_minor=5)
+        current_major = nb.get("nbformat")
+        if not current_major or int(current_major) < 4:
+            nb["nbformat"] = 4
+        current_minor = nb.get("nbformat_minor")
+        if not current_minor or int(current_minor) < 5:
+            nb["nbformat_minor"] = 5
+
+        with open(file.local_file_path(), "w", encoding="utf-8") as f:
+            nbformat.write(nb, f)
+
+
+def deploy_dir(repo: str, notebook_dir: str, normalize_source: bool) -> None:
     """
     Process each notebook in the specified directory, stamp it with Git info,
     and upload it to S3.
@@ -211,7 +231,8 @@ def deploy_dir(repo: str, notebook_dir: str) -> None:
 
     # get files to stamp
     notebook_files = list_files(repo, notebook_dir)
-
+    if normalize_source:
+        normalize(notebook_files)
     for nbfile in notebook_files:
         print(f"Stamping and uploading notebook: {nbfile.local_file_path()}.")
         stamped_path = nbfile.temp_file_path(temp_dir)
@@ -223,7 +244,7 @@ def deploy_dir(repo: str, notebook_dir: str) -> None:
             os.remove(stamped_path)  # Clean up local copy after upload
 
 
-def deploy_repo(repo_name: str) -> None:
+def deploy_repo(repo_name: str, normalize_source: bool) -> None:
     """
     Deploy all notebooks in the specified repo, timestamping and tagging them with git revision.
     """
@@ -240,10 +261,10 @@ def deploy_repo(repo_name: str) -> None:
         if not os.path.exists(notebooks_dir):
             print(f"Error: notebooks dir '{notebooks_dir}' not found in {repo_dir}")
             continue
-        deploy_dir(repo=repo_name, notebook_dir=dir)
+        deploy_dir(repo=repo_name, notebook_dir=dir, normalize_source=normalize_source)
 
 
-def deploy_notebooks(repo: str = "all") -> None:
+def deploy_notebooks(repo: str = "all", normalize_source: bool = False) -> None:
     """Deploy notebooks to S3 from configured repo(s), timestamping and tagging them with git revision."""
     start_dir = os.getcwd()
 
@@ -254,10 +275,10 @@ def deploy_notebooks(repo: str = "all") -> None:
         os.makedirs(temp_dir, exist_ok=True)
 
     if repo != "all":
-        deploy_repo(repo_name=repo)
+        deploy_repo(repo_name=repo, normalize_source=normalize_source)
     else:
         for r in cfg.get("repos", []):
-            deploy_repo(repo_name=r["name"])
+            deploy_repo(repo_name=r["name"], normalize_source=normalize_source)
 
     # cleanup
     os.chdir(start_dir)
