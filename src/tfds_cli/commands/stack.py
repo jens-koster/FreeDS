@@ -1,7 +1,7 @@
 import typer
 from tfdslib.config import get_config, set_config
 
-from tfds_cli.utils.stackutils import get_current_stack, get_stack_names
+from tfds_cli.utils.stackutils import get_current_stack_name, get_stack_names
 
 cfg_app = typer.Typer()
 cfg_ls_app = typer.Typer()
@@ -13,7 +13,7 @@ cfg_app.add_typer(cfg_ls_app, name="stack")
 def ls() -> None:
     """List all stacks."""
     cfg = get_config("stacks")
-    current_stack = get_current_stack()
+    current_stack = get_current_stack_name()
     if current_stack is None:
         typer.echo("No current stack set,use 'tfds setstack <name>' to set one.")
     for stack in cfg.keys():
@@ -21,7 +21,7 @@ def ls() -> None:
             typer.echo(f"** stack: {stack} ** (current)")
         else:
             typer.echo(f"stack: {stack}")
-        for service in cfg[stack].get("services", []):
+        for service in cfg[stack].get("plugins", []):
             typer.echo(f"  - {service}")
 
 

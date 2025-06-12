@@ -6,9 +6,8 @@ from typing import List, Optional, cast
 from tfdslib.config import get_config
 
 from tfds_cli.utils.stackutils import (
-    get_current_stack,
-    get_stack_config,
-    get_stack_names,
+    get_current_stack_config,
+    get_current_stack_name,
 )
 
 
@@ -30,19 +29,20 @@ def set_secret_envs() -> None:
 
 
 def get_plugins(single: str = "current-stack") -> Optional[List[str]]:
-    current_stack = get_current_stack()
+    current_stack = get_current_stack_name()
+
     if current_stack is None:
         print("Error: No current stack set. Use `tfds setstack <stackname>` to set a stack.")
         return None
 
-    cfg = get_stack_config(current_stack)
-    if not cfg:
-        print(f"Current stack {current_stack} is not defined in stacks config, available stacks: {get_stack_names()}")
+    current_stack_cfg = get_current_stack_config()
+    if current_stack_cfg is None:
+        print(f"Error: No configuration found for current stack '{current_stack}'.")
         return None
 
-    plugins = cfg.get("plugins")
+    plugins = current_stack_cfg.get("plugins")
     if not plugins:
-        print(f'Error: malformed config, "plugins" key is missing on stack{current_stack}.')
+        print(f"Error: malformed config, 'plugins' key is missing on current stack '{current_stack}'.")
         return None
 
     if single and single != "current-stack":
