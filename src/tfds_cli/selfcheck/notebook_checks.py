@@ -1,3 +1,5 @@
+"""RUnning checks defined in notebooks to get them running inside the docker network."""
+
 import json
 import os
 import shutil
@@ -8,7 +10,7 @@ from typing import List
 import docker
 import nbformat
 
-from tfds_cli.selfcheck.checks import (
+from tfds_cli.selfcheck.check_classes import (
     CheckResult,
     ExceptionCheckResult,
     MisconfiguredCheckResult,
@@ -22,10 +24,11 @@ def get_all_notebooks() -> List[Path]:
     """
     # Get the notebooks directory as a resources Traversable
     notebooks_dir = resources.files("tfds_cli").joinpath("notebooks")
+
     # use as_file to get a Path object
     with resources.as_file(notebooks_dir) as notebooks_path:
         # we know they're not zipped so we can use the filenames
-        return list(notebooks_path.glob("*.ipynb"))
+        return list(notebooks_path.rglob("*.ipynb"))
 
 
 def get_result(output_nb: Path) -> CheckResult:
@@ -68,7 +71,7 @@ def run_book(notebook_path: Path, tmp_dir: Path) -> CheckResult:
     cmd = ["papermill", f"/tmp/input/{notebook_path.name}", f"/tmp/output/{notebook_path.name}"]
 
     env_vars = {
-        "TFDS_CONFIG_URL": os.environ.get("TFDS_CONFIG_URL", ""),
+        "TFDS_CONFIG_URL": os.environ.get("TFDS_CONFIG_URL", "http://tfds-config:8005/api/configs"),
     }
 
     client = docker.from_env()
@@ -104,14 +107,10 @@ def run_book(notebook_path: Path, tmp_dir: Path) -> CheckResult:
         client.close()
 
 
-def run_all_notebooks(tmp_dir: Path = Path("/tmp/tfds")) -> List[CheckResult]:
+def check_results(tmp_dir: Path = Path("/tmp/tfds")) -> List[CheckResult]:
     result: List[CheckResult] = []
-    for nb_path in get_all_notebooks():
+    nb_paths = get_all_notebooks()
+    nb_paths.sort()
+    for nb_path in nb_paths:
         result.append(run_book(notebook_path=nb_path, tmp_dir=tmp_dir))
-    for r in result:
-        print(str(r))
     return result
-
-
-if __name__ == "__main__":
-    run_all_notebooks()

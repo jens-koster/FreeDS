@@ -3,7 +3,7 @@ from typing import Any
 import docker
 from tfdslib.config import get_config
 
-from tfds_cli.selfcheck.checks import (
+from tfds_cli.selfcheck.check_classes import (
     AllGoodCheckResult,
     CheckList,
     CheckResult,

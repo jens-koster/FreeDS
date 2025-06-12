@@ -13,7 +13,7 @@ from tfdslib.s3 import (
     put_file,
 )
 
-from tfds_cli.selfcheck.checks import (
+from tfds_cli.selfcheck.check_classes import (
     AllGoodCheckResult,
     CheckList,
     CheckResult,

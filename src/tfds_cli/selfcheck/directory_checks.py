@@ -4,13 +4,13 @@ from typing import List
 
 from tfdslib.config_file import get_root_folder
 
-from tfds_cli.selfcheck.checks import (
+from tfds_cli.selfcheck.check_classes import (
     AllGoodCheckResult,
     CheckList,
     CheckResult,
     PluginCheckResult,
 )
-from tfds_cli.selfcheck.plugin import get_plugins
+from tfds_cli.selfcheck.plugin_classes import get_plugins
 
 
 def docker_compose_exists_check() -> list[CheckResult]:

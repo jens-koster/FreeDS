@@ -4,13 +4,13 @@ from typing import List
 
 import requests
 
-from tfds_cli.selfcheck.checks import (
+from tfds_cli.selfcheck.check_classes import (
     AllGoodCheckResult,
     CheckList,
     CheckResult,
     PluginCheckResult,
 )
-from tfds_cli.selfcheck.plugin import get_docker_compose_services
+from tfds_cli.selfcheck.plugin_classes import get_docker_compose_services
 
 
 def check_web_uis_localhost() -> List[CheckResult]:
