@@ -1,24 +1,43 @@
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Callable, List, Optional, Union
 
 
 class CheckResult:
     """
-    Class to hold the result of a check.
+    Class to hold the results of a check.
     """
 
-    def __init__(self, passed: bool, message: str) -> None:
+    def __init__(self, passed: bool, message: str, check: Optional["Check"] = None) -> None:
         self.passed = passed
         self.message = message
+        self.check = check
 
     @property
     def symbol(self) -> str:
         return "✅" if self.passed else "❌"
 
+    @property
+    def prefix_info(self) -> str:
+        """Override to insert a text before message in str and repr."""
+        return ""
+
+    @property
+    def check_name(self) -> str:
+        return self.check.name if self.check else "unknown"
+
+    @property
+    def check_description(self) -> str:
+        return self.check.description if self.check else "unknown"
+
+    @property
+    def suffix_info(self) -> str:
+        """Override to insert a text after message in str and repr."""
+        return ""
+
     def __str__(self) -> str:
-        return f"{self.symbol} - {self.message}"
+        return f"{self.symbol} - {self.check_name} - {self.prefix_info} {self.message} {self.suffix_info}"
 
     def __repr__(self) -> str:
-        return f"{self.symbol} CheckResult(passed={self.passed}, message={self.message})"
+        return f"{self.symbol} {self.__class__.__name__}(passed={self.passed}, check={self.check_name}, message= {self.prefix_info} {self.message} {self.suffix_info})"
 
 
 class Check:
@@ -28,34 +47,51 @@ class Check:
 
     def __init__(
         self,
-        id: str,
         name: str,
+        area: str,
         description: str,
-        method: Union[Callable[[], List[CheckResult]], Callable[[], CheckResult]],
+        method: Optional[Union[Callable[[], List[CheckResult]], Callable[[], CheckResult]]] = None,
+        results: Optional[List[CheckResult]] = None,
     ) -> None:
-        self.id = id
+        """Initiate a Check by either providing a method to execute or the result of an already executed check."""
+        self.id = (area + "__" + name.lower().replace(" ", "_"),)
         self.name = name
+        self.area = area
         self.description = description
         self.method = method
-        self.results: List[CheckResult] = []
-        self.executed = False
+        self.executed = method is None
+        self.results: List[CheckResult] = results if results else []
+
+        for r in self.results:
+            r.check = self
 
     def execute(self) -> None:
         """
         Execute the check and store the results.
+        If check is marked as executed, executionis skipped.
         :return: None
         """
+        if self.executed:
+            print(f"Check already executed, skipping: {self.name}")
+            return
         try:
             print(f"Executing check: {self.name}")
-            results = self.method()
-            if isinstance(results, List):
-                self.results = results
-            else:
-                self.results = [results]
+            if self.method is not None:
+                results = self.method()
+            self.add_results(results)
+
         except Exception as e:
-            self.results = [ExceptionCheckResult(f"Check '{self.name}' raised an exception.", e)]
+            self.add_results(ExceptionCheckResult(f"Check '{self.name}' raised an exception.", e))
         finally:
             self.executed = True
+
+    def add_results(self, results: Union[List[CheckResult], CheckResult]) -> None:
+        if isinstance(results, list):
+            self.results.extend(results)
+        else:
+            self.results.append(results)
+        for r in self.results:
+            r.check = self
 
     @property
     def passed(self) -> bool:
@@ -90,24 +126,9 @@ class PluginCheckResult(CheckResult):
         super().__init__(passed, message)
         self.plugin_name = plugin_name
 
-    def __str__(self) -> str:
-        return f"{self.symbol} {self.plugin_name}: {self.message}"
-
-
-class NotebookCheckResult(CheckResult):
-    """
-    The result of a notebook based check.
-    """
-
-    def __init__(self, passed: bool, message: str, result_data: Dict[str, Any]) -> None:
-        super().__init__(passed, message)
-        self.area = result_data.get("area")
-        self.description = result_data.get("description")
-        self.plugin_name = result_data.get("plugin")
-        self.result_data = result_data
-
-    def __str__(self) -> str:
-        return f"{self.symbol} {self.area} {self.plugin_name if self.plugin_name else ''} {self.description}: {self.message}"
+    @property
+    def prefix_info(self) -> str:
+        return f"Plugin: {self.plugin_name}"
 
 
 class AllGoodCheckResult(CheckResult):
@@ -167,11 +188,7 @@ class CheckList:
         """
         Add a check to the list.
         """
-        self.checks.append(
-            Check(
-                id=self.area + "__" + name.lower().replace(" ", "_"), name=name, description=description, method=method
-            )
-        )
+        self.checks.append(Check(area=self.area, name=name, description=description, method=method))
 
     def execute(self) -> None:
         """

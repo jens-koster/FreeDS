@@ -73,7 +73,7 @@ def checks() -> CheckList:
     checklst = CheckList(area=__name__)
 
     checklst.add(
-        name="Unresponsive http servers",
+        name="HTTP server health",
         description="Check if web UIs and other http servers are running and accessible, accepting any http response as valid.",
         method=check_web_uis_localhost,
     )

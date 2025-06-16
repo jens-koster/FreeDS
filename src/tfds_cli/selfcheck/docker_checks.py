@@ -151,7 +151,7 @@ def checks() -> CheckList:
     """Run all checks related to docker."""
     checklst = CheckList(__name__)
     checklst.add(
-        name="Missing Docker Containers",
+        name="Expected Docker Containers",
         description="Check if all expected Docker containers are running.",
         method=check_missing_containers,
     )

@@ -11,10 +11,12 @@ import docker
 import nbformat
 
 from tfds_cli.selfcheck.check_classes import (
+    Check,
+    CheckList,
     CheckResult,
     ExceptionCheckResult,
     MisconfiguredCheckResult,
-    NotebookCheckResult,
+    PluginCheckResult,
 )
 
 
@@ -34,9 +36,11 @@ def get_all_notebooks() -> List[Path]:
 def get_result(output_nb: Path) -> CheckResult:
     """Open the output notebook, extract the result of the last cell (assumed to be JSON), and parse it to a dict."""
     nb = nbformat.read(output_nb, as_version=4)
+
     last_cell = nb.cells[-1]
     outputs = last_cell.get("outputs", [])
     result_dict = {}
+
     for output in outputs:
         # The result is usually in 'text' or 'data' fields
         try:
@@ -47,16 +51,30 @@ def get_result(output_nb: Path) -> CheckResult:
                 result_dict = json.loads(output["data"]["text/plain"])
                 break
         except json.JSONDecodeError as e:
-            return ExceptionCheckResult(message=f"Invalid json in last cell:\n{output}", exception=e)
+            return ExceptionCheckResult(
+                message=f"Notebook: {output_nb.name}, Invalid json in last cell:\n{output}", exception=e
+            )
     if result_dict is None:
-        return MisconfiguredCheckResult(message="No result found in last cell, it might not have run.")
+        return MisconfiguredCheckResult(
+            message="Notebook: {output_nb.name}, No result found in last cell, it might not have run."
+        )
     message = result_dict.get("message")
     passed = bool(result_dict.get("passed"))
     if not message or passed is None:
         return MisconfiguredCheckResult(
             message=f"Mandatory key message or passed i smissing in last cell output: {result_dict}."
         )
-    return NotebookCheckResult(passed=passed, message=message, result_data=result_dict)
+    plugin = result_dict.get("plugin")
+    description = result_dict.get("description", "Notebook output failed to provide a description.")
+    area = result_dict.get("area", "notebook")
+    chk = Check(name=output_nb.name, area=area, description=description)
+    result: CheckResult = (
+        PluginCheckResult(passed=passed, message=message, plugin_name=plugin)
+        if plugin
+        else CheckResult(passed=passed, message=message)
+    )
+    chk.add_results(result)
+    return result
 
 
 def run_book(notebook_path: Path, tmp_dir: Path) -> CheckResult:
@@ -107,10 +125,21 @@ def run_book(notebook_path: Path, tmp_dir: Path) -> CheckResult:
         client.close()
 
 
-def check_results(tmp_dir: Path = Path("/tmp/tfds")) -> List[CheckResult]:
-    result: List[CheckResult] = []
+def checks(tmp_dir: Path = Path("/tmp/tfds")) -> CheckList:
+    check_list = CheckList("notebook")
+
     nb_paths = get_all_notebooks()
     nb_paths.sort()
+
     for nb_path in nb_paths:
-        result.append(run_book(notebook_path=nb_path, tmp_dir=tmp_dir))
-    return result
+        check_result = run_book(notebook_path=nb_path, tmp_dir=tmp_dir)
+        if not check_result.check:
+            check_result.check = Check(
+                name=nb_path.name,
+                description="Notebook check failed: {nb_path.name}",
+                area="notebook",
+                results=[check_result],
+            )
+        check_list.checks.append(check_result.check)
+
+    return check_list

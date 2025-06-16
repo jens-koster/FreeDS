@@ -3,13 +3,10 @@ from tfdslib.config import get_config, set_config
 
 from tfds_cli.utils.stackutils import get_current_stack_name, get_stack_names
 
-cfg_app = typer.Typer()
-cfg_ls_app = typer.Typer()
-
-cfg_app.add_typer(cfg_ls_app, name="stack")
+cfg_app = typer.Typer(help="Manage tfds stacks.")
 
 
-@cfg_ls_app.command()  # type: ignore
+@cfg_app.command()  # type: ignore
 def ls() -> None:
     """List all stacks."""
     cfg = get_config("stacks")
@@ -25,7 +22,7 @@ def ls() -> None:
             typer.echo(f"  - {service}")
 
 
-@cfg_ls_app.command()  # type: ignore
+@cfg_app.command()  # type: ignore
 def set(
     stack: str = typer.Argument(..., help="Stack name to set as current"),
 ) -> None:

@@ -3,6 +3,7 @@ from typing import List
 import typer
 
 from tfds_cli.selfcheck import (
+    airflow_checks,
     directory_checks,
     docker_checks,
     network_checks,
@@ -16,7 +17,10 @@ from tfds_cli.selfcheck.check_classes import (
 )
 
 
-def selfcheck() -> int:
+def selfcheck(
+    no_nb: bool = typer.Option(False, "--no-nb", help="Skip the notebook based checks(spark)."),
+    no_airflow: bool = typer.Option(False, "--no-airflow", help="Skip the airflow check."),
+) -> int:
     """
     Perform all self checks.
     """
@@ -26,6 +30,10 @@ def selfcheck() -> int:
         network_checks.checks(),
         s3_checks.checks(),
     ]
+    if not no_nb:
+        checklists.append(notebook_checks.checks())
+    if not no_airflow:
+        checklists.append(airflow_checks.checks())
 
     results: List[CheckResult] = []
     for checklist in checklists:
@@ -35,10 +43,10 @@ def selfcheck() -> int:
         except Exception as e:
             results.append(ExceptionCheckResult(message="A checklist execution raised an exception.", exception=e))
 
-    results.extend(notebook_checks.check_results())
     for result in results:
         typer.echo(result)
     return 0
 
 
-selfcheck()
+if __name__ == "__main__":
+    selfcheck(no_airflow=True, no_nb=True)
