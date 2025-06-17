@@ -1,12 +1,17 @@
-# tfds-cli
-The free data stack CLI.
+# FreeDS
+The free data stack CLI and lib.
+The project is managed in `poetry` and uses CLI framework `typer`.
 
-The CLI is intended top be a small collection of utilities to
-* run docker compose commands on the stack in the relevant order
-* provide direct access to the config files for testing and for the config api server
-* deploy notebook files to s3
-* basic stack operations like inspecting the available stacks and activating a stack
-* testing stack health by running a real but minimal operations on each known plugin
-* setup tfds for first use
+## The FreeDS CLI
+* Setup FreeDS for first use, create directories, clone repos, collect secrets etc
+* Run docker compose commands on the stack in the relevant order, providing the appropriate environment.
+* Deploy and manage notebook files on s3.
+* Stack and lab operations like inspecting the available labs/stacks and activating a lab/stack.
+* Testing FreeDS stack health by running a set of real but minimal operations.
 
-The project is managed in poetry and CLI framework is typer.
+## The FreeDS Package
+* Unified access to config, as file or via config server.
+* Unified view of the plugins.
+* Unified view of repos, providing the union of the-free-data-stack and the configured lab. Regarding dags, configs, notebooks etc
+* Simplified S3 management, put, get, list files and prefixes, using the FreeDS config.
+* Simplified Spark management, setting up a connection using the FreeDS config and S3 connectivity.
