@@ -25,7 +25,9 @@ def s3_check() -> CheckResult:
 
     bucket = "self-check-bucket"
     date = dt.date.fromisoformat("20250102")
-    prefix = make_date_prefix(date)
+    date_prefix = make_date_prefix(date)
+    root_prefix = "s3_check"
+    full_prefix = f"{root_prefix}/{date_prefix}"
     tmp_dir = Path("/tmp/tfds/selfcheck")
     source_dir = tmp_dir / "source"
     source_dir.mkdir(parents=True, exist_ok=True)
@@ -47,24 +49,25 @@ def s3_check() -> CheckResult:
             )
 
         current_command = "put_file"
-        put_file(local_path=source_dir / file_name, bucket=bucket, prefix=prefix, file_name=file_name)
-        expected_file_name = f"{prefix}/{file_name}"
+
+        put_file(local_path=source_dir / file_name, bucket=bucket, prefix=full_prefix, file_name=file_name)
+        expected_file_name = f"{full_prefix}/{file_name}"
         current_command = "list_files"
-        files = list_files(bucket_name=bucket, prefix=prefix)
+        files = list_files(bucket_name=bucket, prefix=full_prefix)
         if files != [expected_file_name]:
             return CheckResult(
                 passed=False, message=f"Error in list_files, expected: [{expected_file_name}] got: {files}."
             )
 
         current_command = "list_files_for_dates"
-        files = list_files_for_dates(dates=[date], bucket_name=bucket)
+        files = list_files_for_dates(dates=[date], root_prefix=root_prefix, bucket_name=bucket)
         if files != [expected_file_name]:
             return CheckResult(
                 passed=False, message=f"Error in list_files_for_dates, expected: [{expected_file_name}] got: {files}."
             )
 
         current_command = "get_file"
-        get_file(local_path=target_dir / file_name, bucket=bucket, prefix=prefix, file_name=file_name)
+        get_file(local_path=target_dir / file_name, bucket=bucket, prefix=full_prefix, file_name=file_name)
         if not (target_dir / file_name).is_file() or (target_dir / file_name).stat().st_size == 0:
             return CheckResult(
                 passed=False,
@@ -72,8 +75,8 @@ def s3_check() -> CheckResult:
             )
 
         current_command = "delete_prefix"
-        delete_prefix(bucket=bucket, prefix=prefix)
-        files = list_files(bucket_name=bucket, prefix=prefix)
+        delete_prefix(bucket=bucket, prefix=root_prefix)
+        files = list_files(bucket_name=bucket, prefix=root_prefix)
         if files != []:
             return CheckResult(passed=False, message=f"Error in list_files, expected an empty list, got: {files}.")
 
@@ -99,3 +102,7 @@ def checks() -> CheckList:
         method=s3_check,
     )
     return checklst
+
+
+if __name__ == "__main__":
+    s3_check()
