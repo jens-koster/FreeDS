@@ -2,7 +2,7 @@ from typing import List
 
 import typer
 
-from freeds.utils import execute_docker_compose, get_plugins
+from freeds.cli.helpers import execute_docker_compose, get_plugins
 
 
 def dc(

@@ -3,7 +3,7 @@ import os
 import nbformat
 import pytest
 
-import freeds.utils.notebook as nb_mod
+import freeds.cli.helpers.notebook as nb_mod
 
 
 def test_find_dir_found(tmp_path):

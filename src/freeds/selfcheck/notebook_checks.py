@@ -100,7 +100,7 @@ def run_book(notebook_path: Path, tmp_dir: Path) -> CheckResult:
         }
 
         container = client.containers.run(
-            image="tfds/papermill-base:latest",
+            image="freeds/jupyter-spark:latest",
             name=f"check-{notebook_path.name}",
             command=cmd,
             auto_remove=True,

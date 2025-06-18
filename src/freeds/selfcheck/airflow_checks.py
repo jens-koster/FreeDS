@@ -3,7 +3,7 @@ import logging
 import time
 from typing import List, Optional, cast
 
-from airflow_client.client.api import dag_run_api, task_instance_api
+from airflow_client.client.api import dag_api, dag_run_api, task_instance_api
 from airflow_client.client.api_client import ApiClient
 from airflow_client.client.configuration import Configuration
 from airflow_client.client.model.dag_run import DAGRun
@@ -17,6 +17,24 @@ from freeds.selfcheck.check_classes import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def get_dag_is_paused(dag_id: str) -> Optional[bool]:
+    """Retrieve the dag enabled/disabled state from airflow."""
+    with ApiClient(get_airflow_config()) as api_client:
+        dag_api_instance = dag_api.DAGApi(api_client)
+        dag = dag_api_instance.get_dag(dag_id)
+        is_paused: bool = dag.is_paused
+        return is_paused
+
+
+def set_dag_is_paused(dag_id: str, is_paused: bool) -> Optional[bool]:
+    """Set the dag paused/unpaused state in airflow."""
+    with ApiClient(get_airflow_config()) as api_client:
+        dag_api_instance = dag_api.DAGApi(api_client)
+        # The API expects a dict with the key 'is_paused'
+        dag_api_instance.patch_dag(dag_id, {"is_paused": is_paused})
+        return is_paused == get_dag_is_paused(dag_id=dag_id)
 
 
 def get_airflow_config() -> Configuration:
@@ -124,7 +142,13 @@ _timeout_seconds = 5 * 60
 def check_airflow_run() -> CheckResult:
     """Run a full airflow dag using s3, spark and the full monty."""
     global _dag_id, _timeout_seconds
-    return trigger_and_wait_for_airflow_run(dag_id=_dag_id, timeout_seconds=_timeout_seconds)
+    is_paused = get_dag_is_paused(_dag_id)
+    if is_paused:
+        set_dag_is_paused(dag_id=_dag_id, is_paused=False)
+    result = trigger_and_wait_for_airflow_run(dag_id=_dag_id, timeout_seconds=_timeout_seconds)
+    if is_paused:
+        set_dag_is_paused(dag_id=_dag_id, is_paused=True)
+    return result
 
 
 def checks() -> CheckList:

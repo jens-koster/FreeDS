@@ -1,7 +1,7 @@
 import typer
 
+from freeds.cli.helpers.stackutils import get_current_stack_name, get_stack_names
 from freeds.config import get_config, set_config
-from freeds.utils.stackutils import get_current_stack_name, get_stack_names
 
 cfg_app = typer.Typer(help="Manage tfds stacks.")
 

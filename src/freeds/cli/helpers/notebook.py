@@ -6,7 +6,7 @@ from typing import Any, Optional, cast
 
 import git
 import nbformat
-
+import shutil
 from freeds.config import get_config
 from freeds.s3 import put_file
 
@@ -278,6 +278,7 @@ def deploy_notebooks(repo: str = "all", normalize_source: bool = False) -> None:
     if temp_dir is None:
         raise ValueError("nbdeploy config has no value for temp_dir")
     create_temp_dir = not os.path.exists(temp_dir)
+    preserve_temp = bool(cfg.get("preserve_temp", False))
     if create_temp_dir:
         os.makedirs(temp_dir, exist_ok=True)
 
@@ -289,6 +290,10 @@ def deploy_notebooks(repo: str = "all", normalize_source: bool = False) -> None:
 
     # cleanup
     os.chdir(start_dir)
-    if create_temp_dir and not cfg.get("preserve_temp"):
-        os.rmdir(temp_dir)
+    if create_temp_dir and not preserve_temp:
+        for _, _, files in os.walk(temp_dir):
+            if files:
+                raise FileExistsError(f'{temp_dir} is not empty: {files}')
+        print(f'removing temp dir: {temp_dir}')
+        shutil.rmtree(temp_dir)
     print("Deployment complete!")

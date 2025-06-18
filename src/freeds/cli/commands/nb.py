@@ -1,8 +1,8 @@
 import typer
 
+from freeds.cli.helpers import deploy_notebooks
 from freeds.config import get_config
 from freeds.s3 import delete_prefix, list_files
-from freeds.utils import deploy_notebooks
 
 nb_app = typer.Typer(help="Manage notebooks on S3.")
 
