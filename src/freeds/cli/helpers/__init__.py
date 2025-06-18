@@ -1,5 +1,4 @@
 from .notebook import deploy_notebooks
-
 from .stackrunner import execute_docker_compose, get_plugins
 from .stackutils import (
     get_current_stack_config,
@@ -7,7 +6,6 @@ from .stackutils import (
     get_stack_names,
     set_current_stack,
 )
-
 
 __all__ = [
     "get_current_stack_config",

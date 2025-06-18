@@ -1,12 +1,13 @@
 import datetime as dt
 import os
+import shutil
 import sys
 from pathlib import Path
 from typing import Any, Optional, cast
 
 import git
 import nbformat
-import shutil
+
 from freeds.config import get_config
 from freeds.s3 import put_file
 
@@ -293,7 +294,7 @@ def deploy_notebooks(repo: str = "all", normalize_source: bool = False) -> None:
     if create_temp_dir and not preserve_temp:
         for _, _, files in os.walk(temp_dir):
             if files:
-                raise FileExistsError(f'{temp_dir} is not empty: {files}')
-        print(f'removing temp dir: {temp_dir}')
+                raise FileExistsError(f"{temp_dir} is not empty: {files}")
+        print(f"removing temp dir: {temp_dir}")
         shutil.rmtree(temp_dir)
     print("Deployment complete!")

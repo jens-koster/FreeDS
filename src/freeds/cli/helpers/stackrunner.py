@@ -3,11 +3,11 @@ import subprocess
 from pathlib import Path
 from typing import List, Optional, cast
 
-from freeds.config import get_config
 from freeds.cli.helpers.stackutils import (
     get_current_stack_config,
     get_current_stack_name,
 )
+from freeds.config import get_config
 
 
 def set_secret_envs() -> None:
