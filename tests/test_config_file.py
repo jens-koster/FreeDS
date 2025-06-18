@@ -27,13 +27,13 @@ def test_strip_yaml():
 
 
 def test_get_root_folder_env(monkeypatch):
-    monkeypatch.setenv("FREEDS_ROOT_PATH", "/tmp/testtfds")
-    assert config_file.get_root_folder() == Path("/tmp/testtfds")
+    monkeypatch.setenv("FREEDS_ROOT_PATH", "/tmp/testfreeds")
+    assert config_file.get_root_folder() == Path("/tmp/testfreeds")
 
 
 def test_get_root_folder_default(monkeypatch):
     monkeypatch.delenv("FREEDS_ROOT_PATH", raising=False)
-    assert config_file.get_root_folder() == Path("/opt/tfds/")
+    assert config_file.get_root_folder() == Path("/opt/freeds/")
 
 
 def test_get_file_name_prefers_secrets(temp_root):

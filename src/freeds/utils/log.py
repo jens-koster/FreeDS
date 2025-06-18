@@ -4,9 +4,9 @@ from typing import Optional
 
 
 def setup_logging(
-    tfds_package_names: list[str] = ["freeds", "tfds", "tfds_cli"],
+    freeds_package_names: list[str] = ["freeds", "freeds", "freeds_cli"],
     current_module: Optional[str] = None,
-    tfds_level: int = logging.INFO,
+    freeds_level: int = logging.INFO,
     global_level: int = logging.WARNING,
 ) -> None:
     root_logger = logging.getLogger()
@@ -21,10 +21,10 @@ def setup_logging(
     root_logger.setLevel(global_level)  # Third-party default: only warn and up
 
     # our packages
-    pkg_lst = tfds_package_names.copy()
+    pkg_lst = freeds_package_names.copy()
     if current_module:
         pkg_lst.append(current_module.split(".")[0])
 
     for pkg in pkg_lst:
         package_logger = logging.getLogger(pkg)
-        package_logger.setLevel(tfds_level)
+        package_logger.setLevel(freeds_level)

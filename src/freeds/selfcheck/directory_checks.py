@@ -1,4 +1,4 @@
-"""check that all the tfds directories are in place."""
+"""check that all the freeds directories are in place."""
 
 from typing import List
 
@@ -48,7 +48,7 @@ def readme_exists_check() -> list[CheckResult]:
 
 def check_directories_exist() -> List[CheckResult]:
     """
-    check all the tfds folders are in place.
+    check all the freeds folders are in place.
     """
     result: List[CheckResult] = []
     root = get_root_folder()

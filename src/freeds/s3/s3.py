@@ -130,7 +130,7 @@ def get_file(local_path: Union[str, Path], bucket: str, file_name: str, prefix: 
 
 
 def make_date_prefix(date: Union[dt.datetime, dt.date]) -> str:
-    """Make a tfds standard prefix for the given date."""
+    """Make a freeds standard prefix for the given date."""
     year = date.strftime("%Y")
     month = date.strftime("%m")
     day = date.strftime("%d")
@@ -154,7 +154,7 @@ def list_files(prefix: str, bucket_name: str) -> list[str]:
 
 
 def list_files_for_dates(dates: list[Union[dt.datetime, dt.date]], root_prefix: str, bucket_name: str) -> list[str]:
-    """List all files in the s3 tfds standard date paths for the given dates.
+    """List all files in the s3 freeds standard date paths for the given dates.
     Spark doesn't resolve wildcards so we need to list the files individually.
     Filenames are returned as haddoop compatible uri:s 's3a://bucket/prefix/filename'."""
     all_files = []

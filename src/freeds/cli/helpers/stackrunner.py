@@ -11,10 +11,10 @@ from freeds.config import get_config
 
 
 def set_secret_envs() -> None:
-    """Set our secrets in environment variables; TFDS_<PLUGIN>_<KEY>."""
+    """Set our secrets in environment variables; FREEDS_<PLUGIN>_<KEY>."""
     config_cfg = get_config("config")
     os.environ["FREEDS_CONFIG_URL"] = config_cfg.get("url", "http://freeds-config:8005/api/configs")
-    os.environ["FREEDS_ROOT_PATH"] = config_cfg.get("root", "/opt/tfds")
+    os.environ["FREEDS_ROOT_PATH"] = config_cfg.get("root", "/opt/freeds")
     secrets = ["minio", "s3"]  # todo: make this a config...
     for secret in secrets:
         config = get_config(secret)
@@ -23,7 +23,7 @@ def set_secret_envs() -> None:
                 value = str(Path(value).expanduser())
             if isinstance(value, list):
                 value = ",".join(map(str, value))
-            env_var = f"TFDS_{secret}_{key}".upper()
+            env_var = f"FREEDS_{secret}_{key}".upper()
             os.environ[env_var] = str(value)
 
 
@@ -31,7 +31,7 @@ def get_plugins(single: str = "current-stack") -> Optional[List[str]]:
     current_stack = get_current_stack_name()
 
     if current_stack is None:
-        print("Error: No current stack set. Use `tfds setstack <stackname>` to set a stack.")
+        print("Error: No current stack set. Use `freeds setstack <stackname>` to set a stack.")
         return None
 
     current_stack_cfg = get_current_stack_config()

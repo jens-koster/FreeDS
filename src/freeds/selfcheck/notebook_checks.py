@@ -125,7 +125,7 @@ def run_book(notebook_path: Path, tmp_dir: Path) -> CheckResult:
         client.close()
 
 
-def checks(tmp_dir: Path = Path("/tmp/tfds")) -> CheckList:
+def checks(tmp_dir: Path = Path("/tmp/freeds")) -> CheckList:
     check_list = CheckList("notebook")
 
     nb_paths = get_all_notebooks()

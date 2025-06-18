@@ -237,4 +237,4 @@ if __name__ == "__main__":
             print(f"  Service: {service_name}, Ports: ")
             for port in service.ports:
                 print(f"      {port}")
-# This code is part of the TFDS CLI self-check plugin system.
+# This code is part of the FREEDS CLI self-check plugin system.

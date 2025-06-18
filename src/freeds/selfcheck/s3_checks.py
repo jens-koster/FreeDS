@@ -27,7 +27,7 @@ def s3_check() -> CheckResult:
     date_prefix = make_date_prefix(date)
     root_prefix = "s3_check"
     full_prefix = f"{root_prefix}/{date_prefix}"
-    tmp_dir = Path("/tmp/tfds/selfcheck")
+    tmp_dir = Path("/tmp/freeds/selfcheck")
     source_dir: Path = tmp_dir / "source"
     source_dir.mkdir(parents=True, exist_ok=True)
     target_dir: Path = tmp_dir / "target"

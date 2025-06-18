@@ -21,8 +21,8 @@ def strip_yaml(config_name: Union[str, Path]) -> str:
 
 
 def get_root_folder() -> Path:
-    """Get the tfds root folder (defaulting to /opt/tfds)."""
-    return Path(os.environ.get("FREEDS_ROOT_PATH", "/opt/tfds/"))
+    """Get the freeds root folder (defaulting to /opt/freeds)."""
+    return Path(os.environ.get("FREEDS_ROOT_PATH", "/opt/freeds/"))
 
 
 def get_file_name(config_name: str) -> Path:

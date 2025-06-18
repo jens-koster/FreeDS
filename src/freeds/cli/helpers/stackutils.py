@@ -49,18 +49,18 @@ def get_stack_names() -> list[str]:
 
 
 def set_current_stack(stack_name: str) -> None:
-    """Set tfds to use the provided stack."""
+    """Set freeds to use the provided stack."""
     stack_found = False
     for name in get_stack_names():
         if stack_name == name:
             stack_found = True
             break
     if not stack_found:
-        print(f"Error: Stack '{stack_name}' not found, use `tfds ls` to see available stacks.")
+        print(f"Error: Stack '{stack_name}' not found, use `freeds ls` to see available stacks.")
 
     # Lock the file to prevent race conditions
     config = {
-        "annotation": "the current stack for tfds cli, use setstack to change it, editing here is fine too",
+        "annotation": "the current stack for freeds cli, use setstack to change it, editing here is fine too",
         "config": {"current_stack": stack_name},
     }
     set_config("currentstack", config)

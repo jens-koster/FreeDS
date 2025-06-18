@@ -3,7 +3,7 @@ name = "freeds"
 version = "0.2.7"
 description = "The free data stack CLI"
 authors = [
-    {name = "Jens Köster",email = "tfds@jensbox.se"}
+    {name = "Jens Köster",email = "freeds@jensbox.se"}
 ]
 license = {text = "GNU GENERAL PUBLIC LICENSE v3"}
 readme = "README.md"
@@ -46,7 +46,7 @@ ruff = "^0.11.10"
 
 [[tool.poetry.source]]
 name = "devpi"
-url = "http://devpi:8008/root/tfds/+simple/"
+url = "http://devpi:8008/root/freeds/+simple/"
 priority = "supplemental"
 
 [tool.black]
@@ -55,7 +55,7 @@ line-length = 88
 
 [tool.pytest.ini_options]
 norecursedirs = [
-    "tfds",
+    "freeds",
     "the-free-data-stack",
     "pipe-dreams"
 ]

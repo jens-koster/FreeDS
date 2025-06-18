@@ -38,7 +38,7 @@ def set_dag_is_paused(dag_id: str, is_paused: bool) -> Optional[bool]:
 
 
 def get_airflow_config() -> Configuration:
-    """Create an airflow config objetc using the tfds config."""
+    """Create an airflow config objetc using the freeds config."""
     cfg = get_config("airflow")
     url = cfg.get("url")
     user = cfg.get("user")
