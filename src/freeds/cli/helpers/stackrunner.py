@@ -13,8 +13,8 @@ from freeds.config import get_config
 def set_secret_envs() -> None:
     """Set our secrets in environment variables; TFDS_<PLUGIN>_<KEY>."""
     config_cfg = get_config("config")
-    os.environ["TFDS_CONFIG_URL"] = config_cfg.get("url", "http://tfds-config:8005/api/configs")
-    os.environ["TFDS_ROOT_PATH"] = config_cfg.get("root", "/opt/tfds")
+    os.environ["FREEDS_CONFIG_URL"] = config_cfg.get("url", "http://freeds-config:8005/api/configs")
+    os.environ["FREEDS_ROOT_PATH"] = config_cfg.get("root", "/opt/tfds")
     secrets = ["minio", "s3"]  # todo: make this a config...
     for secret in secrets:
         config = get_config(secret)

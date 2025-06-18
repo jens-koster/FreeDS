@@ -87,8 +87,8 @@ def checks() -> CheckList:
     checklst = CheckList(area=__name__)
 
     checklst.add(
-        name="Unresponsive http servers",
-        description="Check if web UIs and other http servers are running and accessible, accepting any http response as valid.",
+        name="Check freeds directories",
+        description="Check that freeds directories and loinks exist, like config, secrets etc.",
         method=check_directories_exist,
     )
     checklst.add(

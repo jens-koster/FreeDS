@@ -22,7 +22,7 @@ def strip_yaml(config_name: Union[str, Path]) -> str:
 
 def get_root_folder() -> Path:
     """Get the tfds root folder (defaulting to /opt/tfds)."""
-    return Path(os.environ.get("TFDS_ROOT_PATH", "/opt/tfds/"))
+    return Path(os.environ.get("FREEDS_ROOT_PATH", "/opt/tfds/"))
 
 
 def get_file_name(config_name: str) -> Path:
@@ -101,3 +101,7 @@ def get_config_from_file(config_name: str) -> dict[str, Any]:
     """Get the a config key from a file while validating the file."""
     cfg = read_config(config_name=config_name)["config"]
     return cast(dict[str, Any], cfg)
+
+
+if __name__ == "__main__":
+    print(read_config("currentstack"))

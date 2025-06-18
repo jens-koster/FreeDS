@@ -9,7 +9,7 @@ import freeds.config.api.config_api as config_api
 @pytest.fixture(autouse=True)
 def patch_env(monkeypatch):
     # Ensure environment variable is not set unless explicitly set in test
-    monkeypatch.delenv("TFDS_CONFIG_URL", raising=False)
+    monkeypatch.delenv("FREEDS_CONFIG_URL", raising=False)
 
 
 MOCK_CONFIG = {"config": {"foo": "bar"}, "meta": {"baz": "qux"}}
@@ -28,11 +28,11 @@ def mock_requests_get_valid_config():
 
 
 def test_get_config_url_default():
-    assert config_api.get_config_url() == "http://tfds-config:8005/api/configs/"
+    assert config_api.get_config_url() == "http://freeds-config:8005/api/configs/"
 
 
 def test_get_config_url_env(monkeypatch):
-    monkeypatch.setenv("TFDS_CONFIG_URL", "http://custom-url")
+    monkeypatch.setenv("FREEDS_CONFIG_URL", "http://custom-url")
     assert config_api.get_config_url() == "http://custom-url/"
 
 

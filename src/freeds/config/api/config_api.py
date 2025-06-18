@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 def get_config_url(config_name: Union[None, str] = None) -> str:
     """Get the config api server url."""
     # this must have the / at the end, otherwise the url will not work.
-    base_url = os.environ.get("TFDS_CONFIG_URL", "http://tfds-config:8005/api/configs/")
+    base_url = os.environ.get("FREEDS_CONFIG_URL", "http://freeds-config:8005/api/configs/")
     if not base_url.endswith("/"):
         base_url += "/"
     # this can't have a slash at the end

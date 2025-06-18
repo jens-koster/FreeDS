@@ -89,7 +89,7 @@ def run_book(notebook_path: Path, tmp_dir: Path) -> CheckResult:
     cmd = ["papermill", f"/tmp/input/{notebook_path.name}", f"/tmp/output/{notebook_path.name}"]
 
     env_vars = {
-        "TFDS_CONFIG_URL": os.environ.get("TFDS_CONFIG_URL", "http://tfds-config:8005/api/configs"),
+        "FREEDS_CONFIG_URL": os.environ.get("FREEDS_CONFIG_URL", "http://freeds-config:8005/api/configs"),
     }
 
     client = docker.from_env()
@@ -104,7 +104,7 @@ def run_book(notebook_path: Path, tmp_dir: Path) -> CheckResult:
             name=f"check-{notebook_path.name}",
             command=cmd,
             auto_remove=True,
-            network="tfds-network",
+            network="freeds-network",
             environment=env_vars,
             volumes=volumes,
             tty=False,

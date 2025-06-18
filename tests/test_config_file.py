@@ -12,7 +12,7 @@ from freeds.config.file import config_file
 @pytest.fixture
 def temp_root(monkeypatch):
     temp_dir = tempfile.mkdtemp()
-    monkeypatch.setenv("TFDS_ROOT_PATH", temp_dir)
+    monkeypatch.setenv("FREEDS_ROOT_PATH", temp_dir)
     os.makedirs(os.path.join(temp_dir, "config"), exist_ok=True)
     os.makedirs(os.path.join(temp_dir, "secrets"), exist_ok=True)
     yield Path(temp_dir)
@@ -27,12 +27,12 @@ def test_strip_yaml():
 
 
 def test_get_root_folder_env(monkeypatch):
-    monkeypatch.setenv("TFDS_ROOT_PATH", "/tmp/testtfds")
+    monkeypatch.setenv("FREEDS_ROOT_PATH", "/tmp/testtfds")
     assert config_file.get_root_folder() == Path("/tmp/testtfds")
 
 
 def test_get_root_folder_default(monkeypatch):
-    monkeypatch.delenv("TFDS_ROOT_PATH", raising=False)
+    monkeypatch.delenv("FREEDS_ROOT_PATH", raising=False)
     assert config_file.get_root_folder() == Path("/opt/tfds/")
 
 
