@@ -1,6 +1,6 @@
 [project]
-name = "tfds"
-version = "0.1.6"
+name = "freeds"
+version = "0.2.6"
 description = "The free data stack CLI"
 authors = [
     {name = "Jens Köster",email = "tfds@jensbox.se"}
@@ -13,7 +13,6 @@ dependencies = [
     "boto3 (>=1.38.19,<2.0.0)",
     "requests (>=2.32.3,<3.0.0)",
     "nbformat (>=5.10.4,<6.0.0)",
-    "tfdslib @ file:///Users/jens/src/tfdslib",
     "gitpython (>=3.1.44,<4.0.0)",
     "apache-airflow-client (>=2.10.0,<3.0.0)",
     "docker (>=7.1.0,<8.0.0)",
@@ -23,7 +22,7 @@ dependencies = [
 ]
 
 [project.scripts]
-tfds = "tfds_cli.cli:app"
+freeds = "freeds.cli.cli:app"
 
 [build-system]
 requires = ["poetry-core"]
@@ -31,10 +30,10 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 packages = [
-  { include = "tfds_cli", from = "src" }
+  { include = "freeds", from = "src" }
 ]
 include = [
-  "src/tfds_cli/notebooks/*.ipynb"
+  "src/freeds/notebooks/*.ipynb"
 ]
 
 [tool.poetry.group.dev.dependencies]
@@ -49,10 +48,6 @@ ruff = "^0.11.10"
 name = "devpi"
 url = "http://devpi:8008/root/tfds/+simple/"
 priority = "supplemental"
-
-[tool.poetry.dependencies]
-tfdslib = {develop = true}
-
 
 [tool.black]
 line-length = 88

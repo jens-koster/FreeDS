@@ -2015,25 +2015,6 @@ doc = ["reno", "sphinx"]
 test = ["pytest", "tornado (>=4.5)", "typeguard"]
 
 [[package]]
-name = "tfdslib"
-version = "0.1.20"
-description = "tfds utilities for use in cli, plugins and notebooks"
-optional = false
-python-versions = ">=3.11"
-groups = ["main"]
-files = []
-develop = true
-
-[package.dependencies]
-boto3 = ">=1.38.19,<2.0.0"
-nbformat = ">=5.10.4,<6.0.0"
-requests = ">=2.32.3,<3.0.0"
-
-[package.source]
-type = "directory"
-url = "../tfdslib"
-
-[[package]]
 name = "tornado"
 version = "6.5.1"
 description = "Tornado is a Python web framework and asynchronous networking library, originally developed at FriendFeed."
@@ -2285,4 +2266,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "5128ef0cab739f2a44fd82e80dd91f02e6be5323d05a04842d5e1a71e4d390b0"
+content-hash = "6b043b9a46eb5ee76041c8b792219e92771fef07980b1f5f77740647c089c449"

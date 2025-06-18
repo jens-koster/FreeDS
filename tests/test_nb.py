@@ -1,7 +1,7 @@
 import pytest
 from typer.testing import CliRunner
 
-from tfds_cli.commands.nb import nb_app
+from freeds.commands.nb import nb_app
 
 runner = CliRunner()
 
@@ -15,7 +15,7 @@ def mock_get_config():
 
 
 def test_cfg_command(monkeypatch, mock_get_config):
-    monkeypatch.setattr("tfds_cli.commands.nb.get_config", lambda x: mock_get_config)
+    monkeypatch.setattr("freeds.commands.nb.get_config", lambda x: mock_get_config)
     result = runner.invoke(nb_app, ["cfg"])
     assert result.exit_code == 0
     out = result.output
@@ -25,9 +25,9 @@ def test_cfg_command(monkeypatch, mock_get_config):
 
 
 def test_ls_with_prefix(monkeypatch, mock_get_config):
-    monkeypatch.setattr("tfds_cli.commands.nb.get_config", lambda x: mock_get_config)
+    monkeypatch.setattr("freeds.commands.nb.get_config", lambda x: mock_get_config)
     monkeypatch.setattr(
-        "tfds_cli.commands.nb.list_files", lambda bucket_name, prefix: [f"{prefix}/nb1.ipynb", f"{prefix}/nb2.ipynb"]
+        "freeds.commands.nb.list_files", lambda bucket_name, prefix: [f"{prefix}/nb1.ipynb", f"{prefix}/nb2.ipynb"]
     )
     result = runner.invoke(nb_app, ["ls", "prefix1"])
     assert result.exit_code == 0
@@ -37,8 +37,8 @@ def test_ls_with_prefix(monkeypatch, mock_get_config):
 
 
 def test_ls_all(monkeypatch, mock_get_config):
-    monkeypatch.setattr("tfds_cli.commands.nb.get_config", lambda x: mock_get_config)
-    monkeypatch.setattr("tfds_cli.commands.nb.list_files", lambda bucket_name, prefix: [f"{prefix}/nb1.ipynb"])
+    monkeypatch.setattr("freeds.commands.nb.get_config", lambda x: mock_get_config)
+    monkeypatch.setattr("freeds.commands.nb.list_files", lambda bucket_name, prefix: [f"{prefix}/nb1.ipynb"])
     result = runner.invoke(nb_app, ["ls"])
     assert result.exit_code == 0
     assert "Repo repo1 has 1 files in bucket notebooks" in result.output
@@ -46,11 +46,11 @@ def test_ls_all(monkeypatch, mock_get_config):
 
 
 def test_delprefix_confirm(monkeypatch, mock_get_config):
-    monkeypatch.setattr("tfds_cli.commands.nb.get_config", lambda x: mock_get_config)
+    monkeypatch.setattr("freeds.commands.nb.get_config", lambda x: mock_get_config)
     monkeypatch.setattr(
-        "tfds_cli.commands.nb.list_files", lambda bucket_name, prefix: [f"{prefix}/nb1.ipynb", f"{prefix}/nb2.ipynb"]
+        "freeds.commands.nb.list_files", lambda bucket_name, prefix: [f"{prefix}/nb1.ipynb", f"{prefix}/nb2.ipynb"]
     )
-    monkeypatch.setattr("tfds_cli.commands.nb.delete_prefix", lambda bucket, prefix: None)
+    monkeypatch.setattr("freeds.commands.nb.delete_prefix", lambda bucket, prefix: None)
     monkeypatch.setattr("typer.confirm", lambda msg: True)
     result = runner.invoke(nb_app, ["delprefix", "prefix1"])
     assert result.exit_code == 0
@@ -59,8 +59,8 @@ def test_delprefix_confirm(monkeypatch, mock_get_config):
 
 
 def test_delprefix_cancel(monkeypatch, mock_get_config):
-    monkeypatch.setattr("tfds_cli.commands.nb.get_config", lambda x: mock_get_config)
-    monkeypatch.setattr("tfds_cli.commands.nb.list_files", lambda bucket_name, prefix: [f"{prefix}/nb1.ipynb"])
+    monkeypatch.setattr("freeds.commands.nb.get_config", lambda x: mock_get_config)
+    monkeypatch.setattr("freeds.commands.nb.list_files", lambda bucket_name, prefix: [f"{prefix}/nb1.ipynb"])
     monkeypatch.setattr("typer.confirm", lambda msg: False)
     result = runner.invoke(nb_app, ["delprefix", "prefix1"])
     assert result.exit_code == 0
