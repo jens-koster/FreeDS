@@ -4,19 +4,20 @@ from pathlib import Path
 import git
 import yaml
 
+import freeds.setup.utils as utils
 import freeds.utils.log as log
 
 logger = log.setup_logging(__name__)
-import freeds.cli.setup.utils as utils
+
 
 os.chdir("/Users/jens/src/myfreeds")
 
 
-def prompt_continue(user_dir: str, this_dir: str) -> bool:
+def prompt_continue(user_dir: Path, this_dir: Path) -> bool:
     return utils.prompt_yesno(
         description=(
-            f"A config file '.freeds' will be created in your user directory: {user_dir}.\n"
-            f"No other changes will be made outside the current folder: {this_dir}."
+            f"A config file '.freeds' will be created in your user directory: {str(user_dir)}.\n"
+            f"No other changes will be made outside the current folder: {str(this_dir)}."
         ),
         question="Shall we proceed",
     )
@@ -35,7 +36,7 @@ def setup_root_dir() -> bool:
     root_path = Path.cwd()
 
     if not prompt_continue(user_dir=Path.home(), this_dir=root_path):
-        return
+        return False
 
     freeds_config_file_path = Path.home() / ".freeds"
     if not prompt_overwrite_config_file(freeds_config_file_path):
@@ -56,9 +57,8 @@ def setup_root_dir() -> bool:
     }
 
     tfsd_repo_root = root_path / "the-free-data-stack"
-    config_repo_root = root_path / "freeds-config"
 
-    logger.info(f"Cloning missing git repos...")
+    logger.info("Cloning missing git repos...")
     for name, url in git_repos.items():
 
         if (root_path / name).exists():
@@ -68,7 +68,7 @@ def setup_root_dir() -> bool:
         logger.info(f"✅ Repo {name} cloned.")
         git.Repo.clone_from(url, name)
 
-    logger.info(f"Creating directory structure")
+    logger.info("Creating directory structure")
     paths = [
         "config",
         "config/locals",
@@ -99,16 +99,16 @@ def setup_root_dir() -> bool:
     utils.relink(symlink=spark_root / "conf", target=tfsd_repo_root / "spark" / "conf")
     utils.relink(symlink=spark_root / "jars", target=tfsd_repo_root / "spark" / "jars")
 
-    logger.info(f"Setting up config dir")
+    logger.info("Setting up config dir")
     config_path = root_path / "config"
     utils.relink(symlink=config_path / "configs", target=root_path / "freeds-config" / "configs")
 
     local_files = ["s3.yaml", "minio.yaml", "airflow.yaml"]
 
-    for f in local_files:
+    for file in local_files:
         utils.soft_copy(
-            source=config_path / "configs" / f,
-            target=config_path / "locals" / f,
+            source=config_path / "configs" / file,
+            target=config_path / "locals" / file,
         )
 
     utils.log_header(title="🟢 Directory setup completed successfully 🌟", char=" ")

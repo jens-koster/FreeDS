@@ -1,5 +1,4 @@
 import getpass
-import logging
 import secrets
 import shutil
 import string
@@ -58,7 +57,7 @@ def prompt_press_any(description: str) -> None:
     input("ℹ️ " + description + "\nPress ENTER to continue")
 
 
-def prompt_yesno(descriptio: str, question: str) -> bool:
+def prompt_yesno(description: str, question: str) -> bool:
     """Provide descripiton and question, then prompt user for yes or no answer."""
     if AUTO_YES:
         return True
@@ -87,7 +86,7 @@ def read_local_config(config_name: str, root_dir: Path) -> Optional[dict[str, An
     return config
 
 
-def write_local_config(config_name: str, data: dict[str, Any], root_dir: Path):
+def write_local_config(config_name: str, data: dict[str, Any], root_dir: Path) -> None:
     file_path = root_dir / "config" / "locals" / (config_name + ".yaml")
     with open(file_path, "w") as file:
         yaml.dump(data, file, default_flow_style=False)

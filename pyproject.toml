@@ -1,6 +1,6 @@
 [project]
 name = "freeds"
-version = "0.2.7"
+version = "0.2.9"
 description = "The free data stack CLI"
 authors = [
     {name = "Jens Köster",email = "freeds@jensbox.se"}
@@ -23,6 +23,7 @@ dependencies = [
 
 [project.scripts]
 freeds = "freeds.cli.cli:app"
+freeds-setup = "freeds.setup.main:main"
 
 [build-system]
 requires = ["poetry-core"]

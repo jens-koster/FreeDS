@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any
 
-import freeds.cli.setup.utils as utils
+import freeds.setup.utils as utils
 import freeds.utils.log as log
 
 logger = log.setup_logging(__name__)
