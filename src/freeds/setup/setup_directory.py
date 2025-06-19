@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import git
@@ -8,9 +7,6 @@ import freeds.setup.utils as utils
 import freeds.utils.log as log
 
 logger = log.setup_logging(__name__)
-
-
-os.chdir("/Users/jens/src/myfreeds")
 
 
 def prompt_continue(user_dir: Path, this_dir: Path) -> bool:
@@ -31,6 +27,10 @@ def prompt_overwrite_config_file(file: Path) -> bool:
     )
 
 
+def freeds_config_file_path() -> Path:
+    return Path.home() / ".freeds"
+
+
 def setup_root_dir() -> bool:
     utils.log_header("Setting up the FreeDS root directory", "-")
     root_path = Path.cwd()
@@ -38,17 +38,17 @@ def setup_root_dir() -> bool:
     if not prompt_continue(user_dir=Path.home(), this_dir=root_path):
         return False
 
-    freeds_config_file_path = Path.home() / ".freeds"
-    if not prompt_overwrite_config_file(freeds_config_file_path):
+    freeds_file_path = freeds_config_file_path()
+    if not prompt_overwrite_config_file(freeds_file_path):
         return False
 
     logger.info(f"FreeDS root path: {root_path}")
     cfg = {"config": {"root": str(root_path)}}
 
-    with open(freeds_config_file_path, "w") as f:
+    with open(freeds_file_path, "w") as f:
         yaml.dump(cfg, f, default_flow_style=False)
 
-    logger.info(f"✅ Wrote config file: {freeds_config_file_path}")
+    logger.info(f"✅ Wrote config file: {freeds_file_path}")
 
     git_repos = {
         "freeds-config": "https://github.com/jens-koster/freeds-config.git",
