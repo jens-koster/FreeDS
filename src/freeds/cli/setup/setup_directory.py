@@ -1,0 +1,115 @@
+import os
+from pathlib import Path
+
+import git
+import yaml
+
+import freeds.utils.log as log
+
+logger = log.setup_logging(__name__)
+import freeds.cli.setup.utils as utils
+
+os.chdir("/Users/jens/src/myfreeds")
+
+
+def prompt_continue(user_dir: str, this_dir: str) -> bool:
+    return utils.prompt_yesno(
+        description=(
+            f"A config file '.freeds' will be created in your user directory: {user_dir}.\n"
+            f"No other changes will be made outside the current folder: {this_dir}."
+        ),
+        question="Shall we proceed",
+    )
+
+
+def prompt_overwrite_config_file(file: Path) -> bool:
+    if not file.exists():
+        return True
+    return utils.prompt_yesno(
+        description=f"The freeds config file already exists: {str(file)}.", question="Overwrite existing config"
+    )
+
+
+def setup_root_dir() -> bool:
+    utils.log_header("Setting up the FreeDS root directory", "-")
+    root_path = Path.cwd()
+
+    if not prompt_continue(user_dir=Path.home(), this_dir=root_path):
+        return
+
+    freeds_config_file_path = Path.home() / ".freeds"
+    if not prompt_overwrite_config_file(freeds_config_file_path):
+        return False
+
+    logger.info(f"FreeDS root path: {root_path}")
+    cfg = {"config": {"root": str(root_path)}}
+
+    with open(freeds_config_file_path, "w") as f:
+        yaml.dump(cfg, f, default_flow_style=False)
+
+    logger.info(f"✅ Wrote config file: {freeds_config_file_path}")
+
+    git_repos = {
+        "freeds-config": "https://github.com/jens-koster/freeds-config.git",
+        "the-free-data-stack": "https://github.com/jens-koster/the-free-data-stack.git",
+        "freeds-lab-databrickish": "https://github.com/jens-koster/freeds-lab-databrickish.git",
+    }
+
+    tfsd_repo_root = root_path / "the-free-data-stack"
+    config_repo_root = root_path / "freeds-config"
+
+    logger.info(f"Cloning missing git repos...")
+    for name, url in git_repos.items():
+
+        if (root_path / name).exists():
+            logger.info(f"✅ Repo {name} already exists, skipping.")
+            continue
+        logger.info(f"Cloning repo: {url} into {name}...")
+        logger.info(f"✅ Repo {name} cloned.")
+        git.Repo.clone_from(url, name)
+
+    logger.info(f"Creating directory structure")
+    paths = [
+        "config",
+        "config/locals",
+        "airflow",
+        "airflow/logs",
+        "postgres",
+        "spark",
+        "data/minio",
+        "data/spark",
+        "data/postgres",
+        "data/local-pypi",
+    ]
+    for path in [(root_path / p) for p in paths]:
+        path.mkdir(parents=True, exist_ok=True)
+
+    # Airflow
+    airflow_symlink_root = root_path / "airflow"
+    airflow_target_root = tfsd_repo_root / "airflow"
+    utils.relink(symlink=airflow_symlink_root / "dags", target=airflow_target_root / "dags")
+    utils.relink(symlink=airflow_symlink_root / "config", target=airflow_target_root / "config")
+    utils.relink(symlink=airflow_symlink_root / "plugins", target=airflow_target_root / "plugins")
+
+    # postgres
+    utils.relink(symlink=root_path / "postgres" / "init", target=tfsd_repo_root / "postgres" / "init")
+
+    # spark
+    spark_root = root_path / "spark"
+    utils.relink(symlink=spark_root / "conf", target=tfsd_repo_root / "spark" / "conf")
+    utils.relink(symlink=spark_root / "jars", target=tfsd_repo_root / "spark" / "jars")
+
+    logger.info(f"Setting up config dir")
+    config_path = root_path / "config"
+    utils.relink(symlink=config_path / "configs", target=root_path / "freeds-config" / "configs")
+
+    local_files = ["s3.yaml", "minio.yaml", "airflow.yaml"]
+
+    for f in local_files:
+        utils.soft_copy(
+            source=config_path / "configs" / f,
+            target=config_path / "locals" / f,
+        )
+
+    utils.log_header(title="🟢 Directory setup completed successfully 🌟", char=" ")
+    return True

@@ -38,7 +38,9 @@ It will perform the following actions:
 #### Create credentials
 You'll be asked to choose username and password for airflow, minio S3 etc. These will be stored in local config files.
 
-## run `freeds dc build`
-## run `freeds dc up`
-## run `freeds dc selfcheck --no-nb --no-airflow`
-## run `freeds nb deploy`
+## Docker setup
+### Create docker network
+### run `freeds dc build`
+### run `freeds dc up`
+### run `freeds dc selfcheck --no-nb --no-airflow`
+### run `freeds nb deploy`
