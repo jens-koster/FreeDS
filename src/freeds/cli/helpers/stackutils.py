@@ -63,5 +63,6 @@ def set_current_stack(stack_name: str) -> None:
         "annotation": "the current stack for freeds cli, use setstack to change it, editing here is fine too",
         "config": {"current_stack": stack_name},
     }
+
     set_config("currentstack", config)
     print(f"Current stack set to '{stack_name}'.")

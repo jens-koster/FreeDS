@@ -4,8 +4,6 @@ from typing import Any, Union, cast
 
 import requests
 
-from freeds.config.file import strip_yaml
-
 logger = logging.getLogger(__name__)
 
 
@@ -16,7 +14,7 @@ def get_config_url(config_name: Union[None, str] = None) -> str:
     if not base_url.endswith("/"):
         base_url += "/"
     # this can't have a slash at the end
-    return f"{base_url}{strip_yaml(config_name)}" if config_name else base_url
+    return f"{base_url}{config_name}" if config_name else base_url
 
 
 def is_api_avaiable() -> bool:

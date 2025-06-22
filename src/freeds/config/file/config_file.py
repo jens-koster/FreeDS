@@ -1,11 +1,12 @@
 """Configuration file access functions"""
 
 import fcntl
-import os
 from pathlib import Path
 from typing import Any, Union, cast
 
 import yaml
+
+from freeds.config.file import freeds_root
 
 
 def strip_yaml(config_name: Union[str, Path]) -> str:
@@ -20,18 +21,13 @@ def strip_yaml(config_name: Union[str, Path]) -> str:
     return config_name
 
 
-def get_root_folder() -> Path:
-    """Get the freeds root folder (defaulting to /opt/freeds)."""
-    return Path(os.environ.get("FREEDS_ROOT_PATH", "/opt/freeds/"))
-
-
 def get_file_name(config_name: str) -> Path:
     """Get a file path for a config, searching in secrets and config folders."""
     config_name = strip_yaml(config_name)
-    attempt = get_root_folder() / "secrets" / (config_name + ".yaml")
+    attempt = freeds_root() / "secrets" / (config_name + ".yaml")
     if attempt.is_file():
         return attempt
-    return get_root_folder() / "config" / (config_name + ".yaml")
+    return freeds_root() / "config" / (config_name + ".yaml")
 
 
 def config_exists(config_name: str) -> bool:
@@ -92,8 +88,8 @@ def list_files(path: Union[str, Path]) -> list[Path]:
 
 def list_configs() -> list[str]:
     """List all available configurations (including the secrets)."""
-    cfg_list = list_files(get_root_folder() / "config")
-    sec_list = list_files(get_root_folder() / "secrets")
+    cfg_list = list_files(freeds_root() / "config")
+    sec_list = list_files(freeds_root() / "secrets")
     return [strip_yaml(f.name) for f in cfg_list + sec_list if f.suffix in (".yaml", ".yml")]
 
 

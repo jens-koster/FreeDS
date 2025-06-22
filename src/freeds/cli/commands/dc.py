@@ -6,7 +6,7 @@ from freeds.cli.helpers import execute_docker_compose, get_plugins
 
 
 def dc(
-    single: str = typer.Option("current-stack", "--single", "-s", help="Run for a single plugin"),
+    single: str = typer.Option(None, "--single", "-s", help="Run for a single plugin"),
     extra: List[str] = typer.Argument(..., help="Docker compose parameters"),
 ) -> int:
     """
@@ -19,12 +19,12 @@ def dc(
         print("Error: docker compose command must be given")
         return 1
 
-    plugins = get_plugins(single)
-    if plugins is None:
-        print(f"Error: could not retrieve plugins for stack '{single}'.")
-        return 1
-    else:
+    plugins: list[str] = []
+    if single is None:
+        plugins = get_plugins()
         print(f"Found plugins: {plugins}")
+    else:
+        plugins = [single]
 
     execute_docker_compose(params=extra, plugins=plugins)
     return 0

@@ -1,6 +1,10 @@
 import typer
 
 from freeds.cli.commands import dc, nb, selfcheck, stack
+from freeds.config import set_env
+
+set_env()
+
 
 app = typer.Typer()
 

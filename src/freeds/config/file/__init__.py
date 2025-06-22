@@ -1,21 +1,8 @@
-from .config_file import (
-    delete_config,
-    get_config_from_file,
-    get_file_name,
-    get_root_folder,
-    list_configs,
-    read_config,
-    strip_yaml,
-    write_config_to_file,
+from .config_classes import (
+    freeds_root,
+    get_config,
+    get_current_config_set,
+    set_config,
 )
 
-__all__ = [
-    "delete_config",
-    "get_config_from_file",
-    "get_file_name",
-    "list_configs",
-    "read_config",
-    "strip_yaml",
-    "write_config_to_file",
-    "get_root_folder",
-]
+__all__ = ["get_current_config_set", "get_config", "set_config", "freeds_root"]

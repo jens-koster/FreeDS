@@ -24,6 +24,7 @@ def selfcheck(
     """
     Perform all self checks.
     """
+
     checklists: List[CheckList] = [
         docker_checks.checks(),
         directory_checks.checks(),

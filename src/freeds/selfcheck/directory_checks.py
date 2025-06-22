@@ -2,7 +2,7 @@
 
 from typing import List
 
-from freeds.config.file import get_root_folder
+from freeds.config.file import freeds_root
 from freeds.selfcheck.check_classes import (
     AllGoodCheckResult,
     CheckList,
@@ -51,7 +51,7 @@ def check_directories_exist() -> List[CheckResult]:
     check all the freeds folders are in place.
     """
     result: List[CheckResult] = []
-    root = get_root_folder()
+    root = freeds_root()
     expected_dirs = [
         ".",
         "config",

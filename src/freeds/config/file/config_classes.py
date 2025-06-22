@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import Any, Optional
 
@@ -40,6 +41,10 @@ class ConfigFile:
         if raise_for_error and message:
             raise (ValueError(message))
         return message is None
+
+    def set_config(self, data: dict[str, Any]) -> None:
+        """Create a new "config" element with content from the provided data, {'config': data}"""
+        self.data = {"config": data}
 
     def get_config(self) -> dict[str, Any]:
         """Get the content of the "config" element in the data"""
@@ -112,6 +117,8 @@ class ConfigSet:
 
 
 def freeds_root() -> Path:
+    if "FREEDS_ROOT_PATH" in os.environ:
+        return Path(os.environ["FREEDS_ROOT_PATH"])
     file_path = freeds_config_file_path()
     if not file_path.exists():
         raise FileNotFoundError("Root config file not found: {file_path}. Run freeds-setup.")
@@ -130,3 +137,22 @@ def freeds_config_set() -> ConfigSet:
 def get_current_config_set() -> ConfigSet:
     """get all configured configs, which for now is only freeds"""
     return freeds_config_set()
+
+
+def get_config(config_name: str) -> Optional[ConfigFile]:
+    """Get config element for the config_name"""
+    cfg_set = get_current_config_set().config_set()
+    return cfg_set.get(config_name)
+
+
+def set_config(config_name: str, data: dict[str, Any]) -> None:
+    """Set a config in the file, files are written to locals, the entire content is replaced."""
+    file_path = freeds_root() / "config" / "locals" / (config_name + ".yaml")
+    cfg_set = get_current_config_set()
+    cfg: ConfigFile
+    if config_name in cfg_set.config_set().keys():
+        cfg = cfg_set.config_set()[config_name]
+        cfg.set_config(data)
+    else:
+        cfg = ConfigFile(file_path=file_path, data=data)
+    cfg.write(file_path=file_path)

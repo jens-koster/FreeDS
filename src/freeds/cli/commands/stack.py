@@ -9,6 +9,7 @@ cfg_app = typer.Typer(help="Manage freeds stacks.")
 @cfg_app.command()  # type: ignore
 def ls() -> None:
     """List all stacks."""
+
     cfg = get_config("stacks")
     current_stack = get_current_stack_name()
     if current_stack is None:

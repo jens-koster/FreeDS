@@ -7,27 +7,12 @@ from freeds.cli.helpers.stackutils import (
     get_current_stack_config,
     get_current_stack_name,
 )
-from freeds.config import get_config
+from freeds.config import set_env
+from freeds.config.file import freeds_root
 
 
-def set_secret_envs() -> None:
-    """Set our secrets in environment variables; FREEDS_<PLUGIN>_<KEY>."""
-    config_cfg = get_config("config")
-    os.environ["FREEDS_CONFIG_URL"] = config_cfg.get("url", "http://freeds-config:8005/api/configs")
-    os.environ["FREEDS_ROOT_PATH"] = config_cfg.get("root", "/opt/freeds")
-    secrets = ["minio", "s3"]  # todo: make this a config...
-    for secret in secrets:
-        config = get_config(secret)
-        for key, value in config.items():
-            if isinstance(value, str) and value.startswith("~/"):
-                value = str(Path(value).expanduser())
-            if isinstance(value, list):
-                value = ",".join(map(str, value))
-            env_var = f"FREEDS_{secret}_{key}".upper()
-            os.environ[env_var] = str(value)
-
-
-def get_plugins(single: str = "current-stack") -> Optional[List[str]]:
+def get_plugins() -> Optional[List[str]]:
+    set_env()
     current_stack = get_current_stack_name()
 
     if current_stack is None:
@@ -44,20 +29,13 @@ def get_plugins(single: str = "current-stack") -> Optional[List[str]]:
         print(f"Error: malformed config, 'plugins' key is missing on current stack '{current_stack}'.")
         return None
 
-    if single and single != "current-stack":
-        if single == ".":
-            print("Running for current dir, assuming it is a plugin.")
-            plugins = [single]
-        elif single in plugins:
-            print(f"Single plugin specified: {single}")
-            plugins = [single]
-        else:
-            print(f"Error: plugin '{single}' not found in stack {current_stack}.")
-            return None
     return cast(List[str], plugins)
 
 
 def execute_docker_compose(params: List[str], plugins: List[str]) -> None:
+    set_env()
+    start_dir = Path.cwd()
+    plugin_root = freeds_root() / "the-free-data-stack"
     command = params[0]
     if command in ["down", "stop"]:
         plugins = list(reversed(plugins))
@@ -67,11 +45,9 @@ def execute_docker_compose(params: List[str], plugins: List[str]) -> None:
     dc = ["docker", "compose", *params]
 
     # Execute the command for each plugin
-    start_dir = Path.cwd()
     print(f"Running '{' '.join(dc)}' for plugins: {plugins}")
-    set_secret_envs()
     for plugin in plugins:
-        plugin_dir = start_dir / plugin
+        plugin_dir = plugin_root / plugin
         if not plugin_dir.exists():
             print(f"Warning: Plugin directory '{plugin_dir}' does not exist. Skipping.")
             continue
