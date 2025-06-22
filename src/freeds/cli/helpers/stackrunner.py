@@ -3,12 +3,15 @@ import subprocess
 from pathlib import Path
 from typing import List, Optional, cast
 
+import freeds.utils.log as log
 from freeds.cli.helpers.stackutils import (
     get_current_stack_config,
     get_current_stack_name,
 )
 from freeds.config import set_env
 from freeds.config.file import freeds_root
+
+logger = log.setup_logging(__name__)
 
 
 def get_plugins() -> Optional[List[str]]:
@@ -35,6 +38,9 @@ def get_plugins() -> Optional[List[str]]:
 def execute_docker_compose(params: List[str], plugins: List[str]) -> None:
     set_env()
     start_dir = Path.cwd()
+
+    run_in_current_dir = plugins == ["."]
+
     plugin_root = freeds_root() / "the-free-data-stack"
     command = params[0]
     if command in ["down", "stop"]:
@@ -47,11 +53,14 @@ def execute_docker_compose(params: List[str], plugins: List[str]) -> None:
     # Execute the command for each plugin
     print(f"Running '{' '.join(dc)}' for plugins: {plugins}")
     for plugin in plugins:
-        plugin_dir = plugin_root / plugin
-        if not plugin_dir.exists():
-            print(f"Warning: Plugin directory '{plugin_dir}' does not exist. Skipping.")
-            continue
-        os.chdir(plugin_dir)
+        if not run_in_current_dir:
+            plugin_dir = plugin_root / plugin
+            if not plugin_dir.exists():
+                print(f"Warning: Plugin directory '{plugin_dir}' does not exist. Skipping.")
+                continue
+
+            os.chdir(plugin_dir)
+
         try:
             print(f"Executing in: {Path.cwd()}")
             subprocess.run(dc, check=True)

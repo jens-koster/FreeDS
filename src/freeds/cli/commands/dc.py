@@ -1,21 +1,21 @@
-from typing import List
-
 import typer
 
 from freeds.cli.helpers import execute_docker_compose, get_plugins
 
+app = typer.Typer()
 
+
+@app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})  # type: ignore[misc]
 def dc(
-    single: str = typer.Option(None, "--single", "-s", help="Run for a single plugin"),
-    extra: List[str] = typer.Argument(..., help="Docker compose parameters"),
+    ctx: typer.Context,
+    single: str = typer.Option(None, "-s", "--single", help="Folder to run docker compose in"),
+    # args: list[str] = typer.Argument(None, help="Arguments to pass to docker compose")
 ) -> int:
     """
     Call docker compose with the supplied parameters for all freeds plugins in the current stack.
     """
-
-    print(f"Running docker compose for {'all plugins' if single == 'current-stack' else single} in current stack.")
-
-    if not extra:
+    args = ctx.args
+    if not args:
         print("Error: docker compose command must be given")
         return 1
 
@@ -26,5 +26,5 @@ def dc(
     else:
         plugins = [single]
 
-    execute_docker_compose(params=extra, plugins=plugins)
+    execute_docker_compose(params=args, plugins=plugins)
     return 0

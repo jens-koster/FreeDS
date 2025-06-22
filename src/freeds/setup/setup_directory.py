@@ -56,7 +56,7 @@ def setup_root_dir() -> bool:
         "freeds-lab-databrickish": "https://github.com/jens-koster/freeds-lab-databrickish.git",
     }
 
-    tfsd_repo_root = root_path / "the-free-data-stack"
+    tfds_repo_root = root_path / "the-free-data-stack"
 
     logger.info("Cloning missing git repos...")
     for name, url in git_repos.items():
@@ -86,18 +86,18 @@ def setup_root_dir() -> bool:
 
     # Airflow
     airflow_symlink_root = root_path / "airflow"
-    airflow_target_root = tfsd_repo_root / "airflow"
+    airflow_target_root = tfds_repo_root / "airflow"
     utils.relink(symlink=airflow_symlink_root / "dags", target=airflow_target_root / "dags")
     utils.relink(symlink=airflow_symlink_root / "config", target=airflow_target_root / "config")
     utils.relink(symlink=airflow_symlink_root / "plugins", target=airflow_target_root / "plugins")
 
     # postgres
-    utils.relink(symlink=root_path / "postgres" / "init", target=tfsd_repo_root / "postgres" / "init")
+    utils.relink(symlink=root_path / "postgres" / "init", target=tfds_repo_root / "postgres" / "init")
 
     # spark
     spark_root = root_path / "spark"
-    utils.relink(symlink=spark_root / "conf", target=tfsd_repo_root / "spark" / "conf")
-    utils.relink(symlink=spark_root / "jars", target=tfsd_repo_root / "spark" / "jars")
+    utils.relink(symlink=spark_root / "conf", target=tfds_repo_root / "spark" / "conf")
+    utils.relink(symlink=spark_root / "jars", target=tfds_repo_root / "spark" / "jars")
 
     logger.info("Setting up config dir")
     config_path = root_path / "config"
@@ -113,3 +113,7 @@ def setup_root_dir() -> bool:
 
     utils.log_header(title="🟢 Directory setup completed successfully 🌟", char=" ")
     return True
+
+
+if __name__ == "__main__":
+    setup_root_dir()
