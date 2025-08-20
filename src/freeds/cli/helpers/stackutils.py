@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 from typing import Any, Optional, Union, cast
 
-from freeds.config import get_config, set_config
-
-
+from freeds.config import get_config
+from freeds.setup.utils import write_local_config
 def get_current_stack_name() -> Union[None, str]:
     """Get the current stack name from the currentstack.yaml file."""
     cur_stack = get_config("currentstack")
@@ -64,5 +63,5 @@ def set_current_stack(stack_name: str) -> None:
         "config": {"current_stack": stack_name},
     }
 
-    set_config("currentstack", config)
+    write_local_config(config_name="currentstack", data=config)
     print(f"Current stack set to '{stack_name}'.")

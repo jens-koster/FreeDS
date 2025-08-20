@@ -5,19 +5,28 @@ from typing import Any, Optional
 import yaml
 
 import freeds.utils.log as log
-from freeds.setup.setup_directory import freeds_config_file_path
+from freeds.utils import RootConfig
 
 logger = log.setup_logging(__name__)
 
 
 class ConfigFile:
-    """Class to facade  single config file form the source dirs "locals" or "configs"""
+    """Class to facade single config file"""
 
-    def __init__(self, file_path: Path, data: Optional[dict[str, Any]] = None) -> None:
+    def __init__(self, file_path: Path, config_set: "ConfigSet", source:str) -> None:
+        self.source = source
+        self.config_set = config_set
         self.source_file_path = file_path
-        self.config_name = file_path.stem
-        self.source = file_path.parent.name  # locals or configs
-        self.data: Optional[dict[str, Any]] = data
+        self.data: dict[str,Any] = None
+        self.load()
+
+    @property
+    def config_name(self):
+        return self.source_file_path.stem
+
+    @property
+    def is_local(self)->bool:
+        return self.source=='locals'
 
     def load(self) -> None:
         if not self.source_file_path.exists():
@@ -42,96 +51,42 @@ class ConfigFile:
             raise (ValueError(message))
         return message is None
 
-    def set_config(self, data: dict[str, Any]) -> None:
-        """Create a new "config" element with content from the provided data, {'config': data}"""
-        self.data = {"config": data}
-
     def get_config(self) -> dict[str, Any]:
         """Get the content of the "config" element in the data"""
-        if self.data is None:
+        if not self.data:
             self.load()
         data: dict[str, Any] = self.data["config"]  # type: ignore[index]
         return data
 
-    def write(self, file_path: Optional[Path] = None) -> Path:
-        """Write config to a new location location or overwrite to source file if no location provided."""
-        if self.data is None:
-            raise ValueError("No config was loaded or provided. (self.data is None)")
-        self.validate()
-        target = file_path if file_path else self.source_file_path
-
-        with open(target, "w") as file:
-            yaml.dump(self.data, file, default_flow_style=False)
-
-        return target
-
-    @property
-    def is_local(self) -> bool:
-        return self.source == "locals"
-
-    @property
-    def is_config(self) -> bool:
-        return self.source == "configs"
-
-
 class ConfigSet:
-    """Class for scanning multiple a root config dirs concluding a single set of config files.
-    Later scanned of same type overrides earlier.
-    Locals always overrides configs of the same name."""
+    """Class for scanning a single set of config files.
+    locals override configs
+    """
 
-    def __init__(self) -> None:
-        self.configs: dict[str, ConfigFile] = {}
-        self.locals: dict[str, ConfigFile] = {}
+    def __init__(self, configs_path: Path, locals_path: Path) -> None:
+        self.configs_path = configs_path
+        self.locals_path = locals_path
 
-        # for auditing/debugging:
-        self.config_roots: list[Path] = []
-        self.all_configs: list[ConfigFile] = []
-        self.all_locals: list[ConfigFile] = []
+        configs = self.list_files(path=configs_path, source='configs')
+        locals =  self.list_files(path=locals_path, source='locals')
+        self.config_set = configs | locals
 
-    def add_config(self, config_file: ConfigFile) -> None:
-        self.all_configs.append(config_file)
-        self.configs[config_file.config_name] = config_file
-
-    def add_local(self, config_file: ConfigFile) -> None:
-        self.all_locals.append(config_file)
-        self.locals[config_file.config_name] = config_file
-
-    def list_files(self, root_dir: Path) -> list[Path]:
-        result = list([f for f in (root_dir / "locals").iterdir()])
-        result.extend(list([f for f in (root_dir / "configs").iterdir()]))
-        return [file for file in result if file.suffix in {".yaml", ".yml"} and file.is_file()]
-
-    def scan(self, config_root_path: Path) -> None:
-        self.config_roots.append(config_root_path)
-        for f in self.list_files(config_root_path):
-            cfg = ConfigFile(f)
-            if cfg.is_config:
-                self.add_config(cfg)
-            else:
-                self.add_local(cfg)
-
-    def config_set(self) -> dict[str, ConfigFile]:
-        result = self.configs.copy()
-        result.update(self.locals)
+    def list_files(self, path:Path, source:str) -> dict[str, ConfigFile]:
+        result: dict[str, ConfigFile]= {}
+        for f in path.iterdir():
+            if not (f.suffix in {".yaml", ".yml"} and f.is_file()):
+                continue
+            cfg = ConfigFile(file_path=f, config_set=self, source=source)
+            result[cfg.config_name] = cfg
         return result
 
-
-def freeds_root() -> Path:
-    if "FREEDS_ROOT_PATH" in os.environ:
-        return Path(os.environ["FREEDS_ROOT_PATH"])
-    file_path = freeds_config_file_path()
-    if not file_path.exists():
-        raise FileNotFoundError("Root config file not found: {file_path}. Run freeds-setup.")
-    config_file = ConfigFile(file_path=file_path)
-    cfg = config_file.get_config()
-    return Path(cfg["root"])
 
 
 def freeds_config_set() -> ConfigSet:
     """Get the freeds config set (from config folder in the root freeds folder)."""
-    cfg_dir = ConfigSet()
-    cfg_dir.scan(freeds_root() / "config")
-    return cfg_dir
+    cfg = RootConfig()
+    cfg_set = ConfigSet(configs_path=cfg.configs_path, locals_path=cfg.locals_path)
+    return cfg_set
 
 
 def get_current_config_set() -> ConfigSet:
@@ -140,19 +95,9 @@ def get_current_config_set() -> ConfigSet:
 
 
 def get_config(config_name: str) -> Optional[ConfigFile]:
-    """Get config element for the config_name"""
-    cfg_set = get_current_config_set().config_set()
-    return cfg_set.get(config_name)
-
-
-def set_config(config_name: str, data: dict[str, Any]) -> None:
-    """Set a config in the file, files are written to locals, the entire content is replaced."""
-    file_path = freeds_root() / "config" / "locals" / (config_name + ".yaml")
-    cfg_set = get_current_config_set()
-    cfg: ConfigFile
-    if config_name in cfg_set.config_set().keys():
-        cfg = cfg_set.config_set()[config_name]
-        cfg.set_config(data)
-    else:
-        cfg = ConfigFile(file_path=file_path, data=data)
-    cfg.write(file_path=file_path)
+    """Get config object for the config_name"""
+    cfg_set = get_current_config_set().config_set
+    cfg = cfg_set.get(config_name)
+    if cfg:
+        cfg.load()
+    return cfg

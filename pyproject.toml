@@ -1,6 +1,6 @@
 [project]
 name = "freeds"
-version = "0.2.9"
+version = "0.2.14"
 description = "The free data stack CLI"
 authors = [
     {name = "Jens Köster",email = "freeds@jensbox.se"}

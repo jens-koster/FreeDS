@@ -59,8 +59,3 @@ def get_meta(config_name: str) -> Union[None, dict[str, Any]]:
     """Get the meta data from the config api response."""
     meta = get_full_config_response(config_name=config_name).get("meta")
     return cast(dict[str, Any], meta) if meta else None
-
-
-def write_config_to_api(config_name: str, config: dict[str, Any]) -> None:
-    response = requests.post(get_config_url(config_name), json=config)
-    response.raise_for_status()

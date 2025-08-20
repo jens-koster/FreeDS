@@ -9,7 +9,7 @@ from freeds.cli.helpers.stackutils import (
     get_current_stack_name,
 )
 from freeds.config import set_env
-from freeds.config.file import freeds_root
+from freeds.utils import RootConfig
 
 logger = log.setup_logging(__name__)
 
@@ -41,7 +41,7 @@ def execute_docker_compose(params: List[str], plugins: List[str]) -> None:
 
     run_in_current_dir = plugins == ["."]
 
-    plugin_root = freeds_root() / "the-free-data-stack"
+    plugin_root = RootConfig().root_path / "the-free-data-stack"
     command = params[0]
     if command in ["down", "stop"]:
         plugins = list(reversed(plugins))

@@ -2,11 +2,10 @@ import logging
 import os
 from typing import Any
 
-from freeds.config.api import get_config_from_api, is_api_avaiable, write_config_to_api
-from freeds.config.file.config_classes import freeds_root
+from freeds.config.api import get_config_from_api, is_api_avaiable
 from freeds.config.file.config_classes import get_config as get_config_from_file
 from freeds.config.file.config_classes import get_current_config_set
-from freeds.config.file.config_classes import set_config as write_config_to_file
+from freeds.utils import RootConfig
 
 logger = logging.getLogger(__name__)
 
@@ -30,25 +29,17 @@ def get_config(config_name: str) -> dict[str, Any]:
         return cfg_file.get_config()
 
 
-def set_config(config_name: str, config: dict[str, Any]) -> None:
-    if config is None:
-        raise ValueError("Config cannot be None.")
-    if config.get("config") is None:
-        raise ValueError("Config must have config key.")
-    if is_api_avaiable():
-        write_config_to_api(config_name=config_name, config=config)
-    else:
-        write_config_to_file(config_name=config_name, data=config)
-
-
 def get_env() -> dict[str, str]:
     """Get all envs as a dict.
     Root path and config url are always envs.
     Additionally any string value in the locals folder is converted to a env value, which should provide all secrets."""
 
-    envs = {"FREEDS_ROOT_PATH": str(freeds_root()), "FREEDS_CONFIG_URL": "http://freeds-config:8005/api/configs/"}
+    envs = {
+        "FREEDS_ROOT_PATH": str(RootConfig().root_path),
+        "FREEDS_CONFIG_URL": "http://freeds-config:8005/api/configs/"
+        }
     cfg_set = get_current_config_set()
-    for cfg_file in cfg_set.locals.values():
+    for cfg_file in (f for f in cfg_set.config_set.values() if f.is_local):
         for key, value in cfg_file.get_config().items():
             if isinstance(value, list) or isinstance(value, dict):
                 continue

@@ -9,11 +9,11 @@ logger = log.setup_logging(__name__)
 
 def merge_config(config_name: str, new_cfg: dict[str, Any]) -> None:
     """Load old config if exists, update with new values and save it, otherwise save the new_cfg as is."""
-    old_cfg = utils.read_local_config(config_name=config_name, root_dir=Path.cwd())
+    old_cfg = utils.read_local_config(config_name=config_name)
     if old_cfg:
         old_cfg.update(new_cfg)
         new_cfg = old_cfg
-    utils.write_local_config(config_name=config_name, data=new_cfg, root_dir=Path.cwd())
+    utils.write_local_config(config_name=config_name, data=new_cfg)
     logger.info(f"✅ Updated local config {config_name}.yaml with new credentials.")
 
 

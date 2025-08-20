@@ -1,3 +1,3 @@
-from .config import get_config, get_env, set_config, set_env
+from .config import get_config, get_env, set_env
 
-__all__ = ["get_config", "set_config", "set_env", "get_env"]
+__all__ = ["get_config", "set_env", "get_env"]

@@ -3,6 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from freeds.config.config import get_config
+from freeds.config.file.config_classes import ConfigFile
 
 
 @pytest.fixture
@@ -26,9 +27,9 @@ def test_get_config_api(monkeypatch, mock_api_config):
 
 def test_get_config_file(monkeypatch, mock_file_config):
     with (
-        patch("freeds.config.config.is_api_avaiable", return_value=False),
-        patch("freeds.config.config.get_config_from_file", return_value=mock_file_config),
+        patch("freeds.config.config.is_api_avaiable", return_value=False)
     ):
+
         result = get_config("myconfig")
         assert result == mock_file_config
 

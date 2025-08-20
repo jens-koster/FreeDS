@@ -4,7 +4,7 @@ import shutil
 import string
 from pathlib import Path
 from typing import Any, Optional
-
+from freeds.utils.root_config import RootConfig
 import yaml
 
 import freeds.utils.log as log
@@ -13,7 +13,6 @@ logger = log.setup_logging(__name__)
 header_logger = log.setup_logging("FreeDS")
 AUTO_YES = False
 
-
 def generate_password(length: int = 8) -> str:
     alphabet = string.ascii_letters + string.digits + string.punctuation
     return "".join(secrets.choice(alphabet) for _ in range(length))
@@ -21,7 +20,7 @@ def generate_password(length: int = 8) -> str:
 
 def relink(symlink: Path, target: Path) -> None:
     """Restablish a directory symlink."""
-
+    logger.info(f'symlinking {symlink}->{target}')
     if symlink.is_symlink():
         symlink.unlink()
     symlink.symlink_to(target, target_is_directory=True)
@@ -61,9 +60,9 @@ def prompt_yesno(description: str, question: str) -> bool:
     """Provide descripiton and question, then prompt user for yes or no answer."""
     if AUTO_YES:
         return True
-    prompt = f"\n❓{description}\n{question}❓ [y/n]"
+    prompt = f"\n❓{description}\n{question}❓ [Y/n]"
     answer = input(prompt).strip().lower()
-    return answer == "y"
+    return answer in("y","")
 
 
 def log_header(title: str, char: str, space: int = 10, vert_char: Optional[str] = None) -> None:
@@ -77,8 +76,10 @@ def log_header(title: str, char: str, space: int = 10, vert_char: Optional[str] 
     header_logger.info(char * width)
 
 
-def read_local_config(config_name: str, root_dir: Path) -> Optional[dict[str, Any]]:
-    file_path = root_dir / "config" / "locals" / (config_name + ".yaml")
+def read_local_config(config_name: str) -> Optional[dict[str, Any]]:
+    root_config = RootConfig()
+
+    file_path = root_config.locals_path / (config_name + ".yaml")
     if not file_path.exists():
         return None
     with open(file_path, "r") as file:
@@ -86,8 +87,9 @@ def read_local_config(config_name: str, root_dir: Path) -> Optional[dict[str, An
     return config
 
 
-def write_local_config(config_name: str, data: dict[str, Any], root_dir: Path) -> None:
-    file_path = root_dir / "config" / "locals" / (config_name + ".yaml")
+def write_local_config(config_name: str, data: dict[str, Any]) -> None:
+    root_config = RootConfig()
+    file_path = root_config.locals_path / (config_name + ".yaml")
     with open(file_path, "w") as file:
         yaml.dump(data, file, default_flow_style=False)
 

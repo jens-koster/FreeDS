@@ -2,7 +2,7 @@
 
 from typing import List
 
-from freeds.config.file import freeds_root
+from freeds.utils import RootConfig
 from freeds.selfcheck.check_classes import (
     AllGoodCheckResult,
     CheckList,
@@ -51,27 +51,27 @@ def check_directories_exist() -> List[CheckResult]:
     check all the freeds folders are in place.
     """
     result: List[CheckResult] = []
-    root = freeds_root()
+    root = RootConfig().root_path
     expected_dirs = [
         ".",
-        "config",
-        "secrets",
-        "airflow",
-        "airflow/config",
-        "airflow/plugins",
-        "airflow/dags",
+        "local_configs",
+        "freeds-config",
+        "freeds-config/configs",
+        "the-free-data-stack",
+        "plugins/airflow",
+        "plugins/airflow/config",
+        "plugins/airflow/plugins",
+        "plugins/airflow/dags",
+        "plugins/spark",
+        "plugins/spark/jars",
+        "plugins/spark/conf",
+        "plugins/postgres",
+        "plugins/postgres/init",
         "logs",
         "data",
-        "spark",
         "data/minio",
-        "data/spark-warehouse",
         "data/spark",
-        "data/spark/metastore",
-        "postgres",
-        "local-pypi",
-        "postgres/init",
-        "spark/jars",
-        "spark/conf",
+        "data/local-pypi",
     ]
     for dir_name in expected_dirs:
         dir_path = root / dir_name
