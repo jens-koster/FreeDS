@@ -163,3 +163,6 @@ def list_files_for_dates(dates: list[Union[dt.datetime, dt.date]], root_prefix: 
         files = list_files(f"{root_prefix}/{prefix}", bucket_name)
         all_files.extend(files)
     return all_files
+
+if __name__ == '__main__':
+    print(get_s3_client())

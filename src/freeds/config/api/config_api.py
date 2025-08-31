@@ -26,7 +26,8 @@ def is_api_avaiable() -> bool:
         if response.status_code != 200:
             logger.error(f"Config API server on {url} returned {response.status_code}, {response.text}")
         return response.status_code == 200
-    except requests.exceptions.RequestException:
+    except requests.exceptions.RequestException as f:
+        logger.error(f)
         return False
 
 

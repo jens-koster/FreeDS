@@ -57,6 +57,10 @@ class ConfigFile:
             self.load()
         data: dict[str, Any] = self.data["config"]  # type: ignore[index]
         return data
+    def __str__(self):
+        return(f'{self.config_name} ({self.source})')
+    def __repr__(self):
+        return(f'<ConfigFile {self.__str__()}>')
 
 class ConfigSet:
     """Class for scanning a single set of config files.
@@ -73,6 +77,8 @@ class ConfigSet:
 
     def list_files(self, path:Path, source:str) -> dict[str, ConfigFile]:
         result: dict[str, ConfigFile]= {}
+        if not isinstance(path, Path):
+            path = Path(path)
         for f in path.iterdir():
             if not (f.suffix in {".yaml", ".yml"} and f.is_file()):
                 continue

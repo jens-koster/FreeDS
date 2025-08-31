@@ -7,9 +7,9 @@ class RootConfig:
 
     def __init__(self):
         self.data:dict[str, str] = {}
-        self.root_path:Path
-        self.configs_path:Path
-        self.locals_path:Path
+        self.root_path:Path = None
+        self.configs_path:Path = None
+        self.locals_path:Path = None
         try:
             self.load()
         except (FileNotFoundError, ValueError):
@@ -25,8 +25,16 @@ class RootConfig:
                 cfg = self.data.get('config',{})
                 self.root_path = Path(cfg.get('root_path'))
 
-        self.configs_path = self.root_path / "freeds-config" / "configs"
-        self.locals_path = self.root_path / "local_configs"
+        self.configs_path = Path(
+            os.environ.get(
+            'FREEDS_CONFIGS_PATH',
+            self.root_path / "freeds-config" / "configs")
+        )
+        self.locals_path = Path(
+            os.environ.get(
+                'FREEDS_LOCALS_PATH',
+                self.root_path / "local_configs")
+        )
         self.is_loaded = self.root_path is not None
         if not self.is_loaded:
             raise ValueError('could not find root config')

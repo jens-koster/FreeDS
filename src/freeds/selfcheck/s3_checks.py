@@ -104,4 +104,4 @@ def checks() -> CheckList:
 
 
 if __name__ == "__main__":
-    s3_check()
+    print(s3_check())

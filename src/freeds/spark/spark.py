@@ -65,3 +65,9 @@ def show_dbs(sc: SparkSession) -> None:
         tables = sc.catalog.listTables(db.name)
         for tbl in tables:
             print(f"    {tbl.name}")
+
+if __name__ == '__main__':
+    spark = get_spark_session("test")
+    show_cfg(spark)
+    show_spark_info(spark)
+    show_dbs(spark)
