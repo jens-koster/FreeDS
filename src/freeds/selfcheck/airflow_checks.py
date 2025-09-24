@@ -161,3 +161,6 @@ def checks() -> CheckList:
         method=check_airflow_run,
     )
     return checklst
+
+if __name__ == '__main__':
+    print(check_airflow_run()   )
