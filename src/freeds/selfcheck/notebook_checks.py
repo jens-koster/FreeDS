@@ -62,7 +62,7 @@ def get_result(output_nb: Path) -> CheckResult:
     passed = bool(result_dict.get("passed"))
     if not message or passed is None:
         return MisconfiguredCheckResult(
-            message=f"Mandatory key message or passed i smissing in last cell output: {result_dict}."
+            message=f"Mandatory key 'message' or 'passed' is missing in last cell output: {result_dict}."
         )
     plugin = result_dict.get("plugin")
     description = result_dict.get("description", "Notebook output failed to provide a description.")
@@ -146,7 +146,12 @@ def checks(tmp_dir: Path = Path("/tmp/freeds")) -> CheckList:
 
 
 if __name__ == "__main__":
-    run_book(
-        notebook_path=Path("/Users/jens/src/FreeDS/src/freeds/notebooks/100.basics/a.hello_world.ipynb"),
+    print(run_book(
+        notebook_path=Path("/Users/jens/src/FreeDS/src/freeds/notebooks/300.spark/a.spark_plain.ipynb"),
         tmp_dir=Path("/tmp/freeds"),
-    )
+    ))
+
+    # run_book(
+    #     notebook_path=Path("/Users/jens/src/FreeDS/src/freeds/notebooks/100.basics/a.hello_world.ipynb"),
+    #     tmp_dir=Path("/tmp/freeds"),
+    # )

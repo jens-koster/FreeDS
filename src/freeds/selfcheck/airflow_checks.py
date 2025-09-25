@@ -8,6 +8,7 @@ from airflow_client.client.api_client import ApiClient
 from airflow_client.client.configuration import Configuration
 from airflow_client.client.model.dag_run import DAGRun
 from airflow_client.client.model.task_instance import TaskInstance
+from airflow_client.client.exceptions import UnauthorizedException
 
 from freeds.config import get_config
 from freeds.selfcheck.check_classes import (
@@ -150,11 +151,34 @@ def check_airflow_run() -> CheckResult:
         set_dag_is_paused(dag_id=_dag_id, is_paused=True)
     return result
 
+def check_airflow_auth() -> CheckResult:
+    """Do a simple auth to check config."""
+    check_result = PluginCheckResult(passed=False, message="", plugin_name="airflow")
+    try:
+        with ApiClient(get_airflow_config()) as api_client:
+            dag_api_instance = dag_api.DAGApi(api_client)
+            dag_api_instance.get_dags()
+        check_result.passed = True
+        check_result.message = "OK, config works to connect to airflow."
+
+    except UnauthorizedException as ex:
+        check_result.message = type(ex).__name__ + ' ' + "Airlfow config failed to auth us, we're still in the closet."
+        check_result.passed = False
+    except Exception as ex:
+        check_result.message = type(ex).__name__ + ' : '+ str(ex)
+        check_result.passed = False
+    return check_result
+
 
 def checks() -> CheckList:
     """Get all checks related to web ui:s."""
     global _dag_id
     checklst = CheckList(area=__name__)
+    checklst.add(
+        name="airflow auth",
+        description=f"Check that we can authenticate in airflow at all.",
+        method=check_airflow_auth,
+    )
     checklst.add(
         name="airflow full run",
         description=f"run an airflow dag end-to-end, currently {_dag_id} is used",
@@ -163,4 +187,7 @@ def checks() -> CheckList:
     return checklst
 
 if __name__ == '__main__':
-    print(check_airflow_run()   )
+    c = checks()
+    c.execute()
+    for chk in c.results:
+        print(chk)

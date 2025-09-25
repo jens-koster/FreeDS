@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../myfreeds"
+		},
+		{
+			"path": "../myfreeds/the-free-data-stack"
+		},
+		{
+			"path": "../myfreeds/freeds-config"
+		},
+		{
+			"path": "../myfreeds/freeds-lab-jaffle-kafe"
+		}
+	],
+    "settings": {}
+}

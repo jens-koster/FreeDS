@@ -1,5 +1,5 @@
 import typer
-
+import importlib.metadata
 from freeds.cli.commands import dc, env, nb, selfcheck, stack
 from freeds.config import set_env
 
@@ -16,4 +16,5 @@ app.add_typer(stack.cfg_app, name="stack")
 
 
 if __name__ == "__main__":
+    print(f'Running freeds {importlib.metadata.version("freeds")}')
     app()
