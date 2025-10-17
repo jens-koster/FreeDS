@@ -2,16 +2,24 @@
 The free data stack CLI and lib.
 The project is managed in `poetry` and uses CLI framework `typer`.
 
-## The freeds CLI
-* Setup freeds for first use, create directories, clone repos, collect secrets etc
-* Run docker compose commands on the stack in the relevant order, providing the appropriate environment.
-* Deploy and manage notebook files on s3.
-* Stack and lab operations like inspecting the available labs/stacks and activating a lab/stack.
-* Testing freeds stack health by running a set of real but minimal operations.
+There's a freeds packae on pypi, that might work for you, but we're still in alpha here, you'll probably need to fix some bugs to get things running, so better clone the repo.
 
-## The freeds Package
-* Unified access to config, as file or via config server.
-* Unified view of the plugins.
-* Unified view of repos, providing the union of the-free-data-stack and the configured lab. Regarding dags, configs, notebooks etc
-* Simplified S3 management, put, get, list files and prefixes, using the freeds config.
-* Simplified Spark management, setting up a connection using the freeds config and S3 connectivity.
+
+Get the "python manager" poetry: https://python-poetry.org/
+
+Preferably using pipx: https://github.com/pypa/pipx
+
+Then, ideally, this should work:
+
+
+    git clone https://github.com/jens-koster/FreeDS.git
+    cd freeds
+    poetry env use 3.11
+    poetry install
+    freeds-setup
+
+The setup process is not yet complete and poorly documented.
+I'll work on it... but then, Johan, my only user, you've got me on messenger just poke me :-)
+
+oh... I just realised we can have Free Data Stack Haketons.
+
