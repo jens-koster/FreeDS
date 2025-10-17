@@ -57,6 +57,8 @@ def setup_root_dir() -> bool:
             description=f"The freeds config file already exists: {str(root_config.freeds_file_path())}.", question="Keep the existing config"
         ):
             root_config.set_default(root_path=root_path)
+    else:
+        root_config.set_default(root_path=root_path)
 
     logger.info(f"✅ Loaded config file: {root_config.freeds_file_path()}")
     logger.info(f"✅ Freeds root path: {root_config.root_path}")

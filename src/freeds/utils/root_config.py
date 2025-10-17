@@ -10,10 +10,14 @@ class RootConfig:
         self.root_path:Path = None
         self.configs_path:Path = None
         self.locals_path:Path = None
+
         try:
             self.load()
         except (FileNotFoundError, ValueError):
             pass
+    @property
+    def is_loaded(self) -> bool:
+        return self.root_path is not None
 
     def load(self):
         p = os.environ.get('FREEDS_ROOT_PATH')
@@ -35,7 +39,6 @@ class RootConfig:
                 'FREEDS_LOCALS_PATH',
                 self.root_path / "local_configs")
         )
-        self.is_loaded = self.root_path is not None
         if not self.is_loaded:
             raise ValueError('could not find root config')
 
