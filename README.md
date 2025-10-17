@@ -52,4 +52,4 @@ Haket is one of the last independent pubs in Göteborg, Sweden, serving craft be
 
 https://www.facebook.com/haketpub/?locale=sv_SE
 
-(I'm handling the rim case of a reader is not Johan. (Unlikely but possible))
+(I'm handling the rim case of a reader that is not also Johan. (Unlikely but possible))
