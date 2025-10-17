@@ -17,9 +17,22 @@ Then, ideally, this should work:
     poetry env use 3.11
     poetry install
     freeds-setup
+    freeds dc build
+    freeds dc up
+
+where you'll need to edit the configs in local_configs to get anything working.
+Also, use the web ui:s to setup credentials for...everything. I'll get to setting that up automatically.
+Checkout the readme in the-free-data-stack repo (cloned to your "my-freeds” folder) for web gui urls.
+One of the things actually provided by freeds is non conflicting ports for the web ui:s...
 
 The setup process is not yet complete and poorly documented.
+
 I'll work on it... but then, Johan, my only user, you've got me on messenger just poke me :-)
 
 oh... I just realised we can have Free Data Stack Haketons.
 
+Haket is one of the last independent pubs in Göteborg, Sweden, serving craft beer with love and friendship (and synth music om Thursdays).
+
+https://www.facebook.com/haketpub/?locale=sv_SE
+
+(I'm handling the rim case that the reader is not Johan. (Unlikely but possible))
