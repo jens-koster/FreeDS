@@ -32,7 +32,7 @@ def get_config(config_name: str) -> dict[str, Any]:
 def get_env() -> dict[str, str]:
     """Get all envs as a dict.
     Root path and config url are always envs.
-    Additionally any string value in the locals folder is converted to a env value, which should provide all secrets."""
+    Additionally all config values are converted to env values."""
     rcfg = RootConfig()
 
     envs = {
@@ -42,7 +42,7 @@ def get_env() -> dict[str, str]:
         "FREEDS_CONFIG_URL": "http://freeds-config:8005/api/configs/"
         }
     cfg_set = get_current_config_set()
-    for cfg_file in (f for f in cfg_set.config_set.values() if f.is_local):
+    for cfg_file in (f for f in cfg_set.config_set.values()):
         for key, value in cfg_file.get_config().items():
             if isinstance(value, list) or isinstance(value, dict):
                 continue

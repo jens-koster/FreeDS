@@ -107,3 +107,12 @@ def get_config(config_name: str) -> Optional[ConfigFile]:
     if cfg:
         cfg.load()
     return cfg
+
+
+if __name__ == '__main__':
+
+    cfgs=freeds_config_set()
+    for key, value in cfgs.config_set.items():
+        print(key, value)
+        if key == 'kafka':
+            print (value.data)
