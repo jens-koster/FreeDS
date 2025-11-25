@@ -23,7 +23,7 @@ dependencies = [
 
 [project.scripts]
 freeds = "freeds.cli.cli:app"
-freeds-setup = "freeds.setup.main:main"
+freeds-setup-old = "freeds.setup.main:main"
 
 [build-system]
 requires = ["poetry-core"]

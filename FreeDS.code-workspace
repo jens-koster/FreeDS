@@ -17,6 +17,9 @@
         },
         {
             "path": "../jaffle-shop-generator"
+        },
+        {
+            "path": "../FreeDS-Setup"
         }
     ],
     "settings": {}
