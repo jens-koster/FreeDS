@@ -36,17 +36,17 @@ def get_env() -> dict[str, str]:
     rcfg = RootConfig()
 
     envs = {
-        "FREEDS_ROOT_PATH": str(rcfg.root_path),
-        "FREEDS_CONFIGS_PATH": str(rcfg.configs_path),
-        "FREEDS_LOCALS_PATH": str(rcfg.locals_path),
-        "FREEDS_CONFIG_URL": "http://freeds-config:8005/api/configs/"
+        "FDS_ROOT_PATH": str(rcfg.root_path),
+        "FDS_CONFIGS_PATH": str(rcfg.configs_path),
+        "FDS_LOCALS_PATH": str(rcfg.locals_path),
+        "FDS_CONFIG_URL": "http://freeds-config:8005/api/configs/"
         }
     cfg_set = get_current_config_set()
     for cfg_file in (f for f in cfg_set.config_set.values()):
         for key, value in cfg_file.get_config().items():
             if isinstance(value, list) or isinstance(value, dict):
                 continue
-            env_name = f"FREEDS_{cfg_file.config_name.upper()}_{key.upper()}"
+            env_name = f"FDS_{cfg_file.config_name.upper()}_{key.upper()}"
             envs[env_name] = str(value)
     return envs
 

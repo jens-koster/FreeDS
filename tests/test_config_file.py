@@ -12,7 +12,7 @@ from freeds.config.file import config_file
 @pytest.fixture
 def temp_root(monkeypatch):
     temp_dir = tempfile.mkdtemp()
-    monkeypatch.setenv("FREEDS_ROOT_PATH", temp_dir)
+    monkeypatch.setenv("FDS_ROOT_PATH", temp_dir)
     os.makedirs(os.path.join(temp_dir, "config"), exist_ok=True)
     os.makedirs(os.path.join(temp_dir, "secrets"), exist_ok=True)
     yield Path(temp_dir)

@@ -89,7 +89,7 @@ def run_book(notebook_path: Path, tmp_dir: Path) -> CheckResult:
     cmd = ["papermill", f"/tmp/input/{notebook_path.name}", f"/tmp/output/{notebook_path.name}"]
 
     env_vars = {
-        "FREEDS_CONFIG_URL": os.environ.get("FREEDS_CONFIG_URL", "http://freeds-config:8005/api/configs"),
+        "FDS_CONFIG_URL": os.environ.get("FDS_CONFIG_URL", "http://freeds-config:8005/api/configs"),
     }
 
     client = docker.from_env()

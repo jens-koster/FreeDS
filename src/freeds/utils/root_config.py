@@ -20,7 +20,7 @@ class RootConfig:
         return self.root_path is not None
 
     def load(self):
-        p = os.environ.get('FREEDS_ROOT_PATH')
+        p = os.environ.get('FDS_ROOT_PATH')
         if p:
             self.root_path = Path(p)
         else:
@@ -31,12 +31,12 @@ class RootConfig:
 
         self.configs_path = Path(
             os.environ.get(
-            'FREEDS_CONFIGS_PATH',
+            'FDS_CONFIGS_PATH',
             self.root_path / "freeds-config" / "configs")
         )
         self.locals_path = Path(
             os.environ.get(
-                'FREEDS_LOCALS_PATH',
+                'FDS_LOCALS_PATH',
                 self.root_path / "local_configs")
         )
         if not self.is_loaded:
